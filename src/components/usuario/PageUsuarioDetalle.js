@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -7,10 +8,11 @@ import {
 import { Container, Box, LinearProgress } from "@mui/material";
 import FormularioUsuario from "./FormularioUsuario";
 import ToolbarDinamico from "../../utils/ToolbarDinamico";
-import SnackbarAlerta from "../../utils/SnackbarAlerta";
 import TipoResultado from "../../utils/TipoResultado";
+import { useSnackbar } from "../../context/SnackbarContext";
 
 const PageUsuarioDetalle = () => {
+  const { showSnackbar } = useSnackbar();
   const { idUsuario } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -18,11 +20,6 @@ const PageUsuarioDetalle = () => {
   const isReadOnly = location.pathname.includes("/ver");
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    mensaje: "",
-    severity: "success",
-  });
 
   useEffect(() => {
     handleObtenerUsuarioPorId(idUsuario);
@@ -43,7 +40,7 @@ const PageUsuarioDetalle = () => {
       }
     } catch (err) {
       console.error("Error al obtener el usuario", err);
-      setSnackbar({
+      showSnackbar({
         open: true,
         mensaje: "Error al obtener el usuario.",
         severity: TipoResultado.ERROR.toString().toLowerCase(),
@@ -64,7 +61,7 @@ const PageUsuarioDetalle = () => {
       const res = await modificarUsuario(idUsuario, usuarioActualizado);
 
       if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
-        setSnackbar({
+        showSnackbar({
           open: true,
           mensaje: res.mensaje,
           severity: TipoResultado.SUCCESS.toString().toLowerCase(),
@@ -74,16 +71,16 @@ const PageUsuarioDetalle = () => {
         setTimeout(() => {
           navigate("/usuarios");
           setLoading(false);
-        }, 1500);
+        });
       } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
-        setSnackbar({
+        showSnackbar({
           open: true,
           mensaje: res.mensaje,
           severity: TipoResultado.WARNING.toString().toLowerCase(),
         });
         setLoading(false);
       } else {
-        setSnackbar({
+        showSnackbar({
           open: true,
           mensaje: res.mensaje,
           severity: TipoResultado.ERROR.toString().toLowerCase(),
@@ -91,7 +88,7 @@ const PageUsuarioDetalle = () => {
       }
     } catch (err) {
       console.error("Error al editar usuario", err);
-      setSnackbar({
+      showSnackbar({
         open: true,
         mensaje: "Error al modificar el usuario.",
         severity: TipoResultado.ERROR.toString().toLowerCase(),
@@ -116,13 +113,6 @@ const PageUsuarioDetalle = () => {
         isEdit={!isReadOnly}
         isReadOnly={isReadOnly}
         onSubmit={handleEnviar}
-      />
-
-      <SnackbarAlerta
-        open={snackbar.open}
-        mensaje={snackbar.mensaje}
-        severity={snackbar.severity}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
       />
     </Container>
   );

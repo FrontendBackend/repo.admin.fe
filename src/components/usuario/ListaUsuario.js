@@ -21,6 +21,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import dayjs from "dayjs";
 
 const ListaUsuario = ({ usuarios, onDelete, onView }) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -77,6 +78,9 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
               <TableRow>
                 <TableCell>Nombre</TableCell>
                 <TableCell>Correo</TableCell>
+                <TableCell>Id del ubigeo</TableCell>
+                <TableCell>Ubigeo</TableCell>
+                <TableCell>Fecha de nacimiento</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
@@ -99,6 +103,35 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
                     }}
                   >
                     {usuario.correoUsuario}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {usuario.idUbigeo}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {usuario.nombreUbigeo}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {usuario.feNacimiento
+                      ? dayjs(usuario.feNacimiento).format("DD/MM/YYYY")
+                      : "-"}
                   </TableCell>
 
                   <TableCell>
