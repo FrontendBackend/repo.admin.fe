@@ -13,6 +13,7 @@ import {
   IconButton,
   CssBaseline,
   Badge,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -22,13 +23,17 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { useThemeMode } from "./context/ThemeContext";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 
 const drawerWidth = 240;
 
 const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
+  const theme = useTheme();
+  const { toggleTheme } = useThemeMode();
   const handleDrawerToggle = () => {
     setIsOpen(!isOpen);
   };
@@ -58,8 +63,16 @@ const Layout = ({ children }) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
+          {/* BOTÓN MODO OSCURO/CLARO */}
+          <IconButton color="inherit" onClick={toggleTheme}>
+            {theme.palette.mode === "dark" ? (
+              <Brightness7Icon />
+            ) : (
+              <Brightness4Icon />
+            )}
+          </IconButton>
           <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
+            <Badge badgeContent={1} color="secondary">
               <NotificationsIcon />
             </Badge>
           </IconButton>
@@ -107,6 +120,12 @@ const Layout = ({ children }) => {
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText primary="Usuario" />
+            </ListItem>
+            <ListItem button onClick={() => navigate("/personas")}>
+              <ListItemIcon>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Personas" />
             </ListItem>
             <ListItem button onClick={handleLogout}>
               <ListItemIcon>
@@ -158,6 +177,12 @@ const Layout = ({ children }) => {
                 <AccountCircleIcon />
               </ListItemIcon>
               <ListItemText primary="Usuario" />
+            </ListItem>
+            <ListItem button onClick={() => navigate("/personas")}>
+              <ListItemIcon>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Personas" />
             </ListItem>
             <ListItem button onClick={handleLogout}>
               <ListItemIcon>

@@ -7,7 +7,6 @@ import {
 } from "../../services/UsuarioServices";
 import { Container, Box, LinearProgress } from "@mui/material";
 import FormularioUsuario from "./FormularioUsuario";
-import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import TipoResultado from "../../utils/TipoResultado";
 import { useSnackbar } from "../../context/SnackbarContext";
 
@@ -101,18 +100,26 @@ const PageUsuarioDetalle = () => {
   return (
     <Container>
       {loading && (
-        <Box sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 9999, }}>
+        <Box
+          sx={{
+            width: "100%",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 9999,
+          }}
+        >
           <LinearProgress />
         </Box>
       )}
-
-      <ToolbarDinamico titulo={isReadOnly ? "Detalle de Usuario" : "Modificar Usuario"} ocultar={true}/>
 
       <FormularioUsuario
         initialData={usuario}
         isEdit={!isReadOnly}
         isReadOnly={isReadOnly}
         onSubmit={handleEnviar}
+        titulo={isReadOnly ? "Detalle de Usuario" : "Modificar Usuario"}
+        ocultar={true}
       />
     </Container>
   );

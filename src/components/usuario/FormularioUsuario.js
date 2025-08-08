@@ -6,22 +6,27 @@ import {
   Autocomplete,
   FormControl,
   FormHelperText,
+  Card,
+  CardContent,
 } from "@mui/material";
 import debounce from "lodash.debounce";
 import { useForm, Controller } from "react-hook-form";
-import api from "../../config/axiosConfig";
 import { useSnackbar } from "../../context/SnackbarContext";
 import TipoResultado from "../../utils/TipoResultado";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { filtrarUbigeo } from "../../services/UbigeoServices";
+import ToolbarDinamico from "../../utils/ToolbarDinamico";
 
 const FormularioUsuario = ({
   onSubmit,
   initialData = {},
   isEdit = false,
   isReadOnly = false,
+  titulo,
+  ocultar = false,
 }) => {
   const { showSnackbar } = useSnackbar();
   const { handleSubmit, control, reset } = useForm({
@@ -80,10 +85,8 @@ const FormularioUsuario = ({
     if (!filtro || filtro.length < 2) return;
     setLoading(true);
     try {
-      const response = await api.get(
-        `/ubigeos/buscar?filtro=${encodeURIComponent(filtro)}`
-      );
-      setUbigeoOptions(response.data.data);
+      const response = await filtrarUbigeo(filtro);
+      setUbigeoOptions(response.data);
     } catch (error) {
       console.error("Error al buscar ubigeos", error);
     } finally {
@@ -97,7 +100,9 @@ const FormularioUsuario = ({
     const dataFinal = {
       ...data,
       idUbigeo: data.idUbigeo ? data.idUbigeo.idUbigeo : null,
-      feNacimiento: data.feNacimiento ? dayjs(data.feNacimiento).format("DD-MM-YYYY") : null,
+      feNacimiento: data.feNacimiento
+        ? dayjs(data.feNacimiento).format("DD-MM-YYYY")
+        : null,
     };
 
     try {
@@ -122,121 +127,132 @@ const FormularioUsuario = ({
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit(onFormSubmit)}
-      sx={{ display: "flex", gap: 2, flexDirection: "column" }}
-    >
-      {/* Nombre */}
-      <Controller
-        name="nombreUsuario"
-        control={control}
-        rules={{ required: "Nombre es obligatorio" }}
-        render={({ field, fieldState }) => (
-          <FormControl error={!!fieldState.error}>
-            <TextField
-              {...field}
-              label="Nombre"
-              inputProps={{ maxLength: 100 }}
-              disabled={isReadOnly}
-              error={!!fieldState.error}
-            />
-            {fieldState.error && (
-              <FormHelperText>{fieldState.error.message}</FormHelperText>
-            )}
-          </FormControl>
-        )}
+    <>
+      <ToolbarDinamico
+        titulo={titulo ? titulo : "Gestión de formulario de usuarios"}
+        ocultar={ocultar}
       />
 
-      {/* Correo */}
-      <Controller
-        name="correoUsuario"
-        control={control}
-        rules={{ required: "Correo es obligatorio" }}
-        render={({ field, fieldState }) => (
-          <FormControl error={!!fieldState.error}>
-            <TextField
-              {...field}
-              label="Correo"
-              type="email"
-              inputProps={{ maxLength: 100 }}
-              disabled={isReadOnly}
-              error={!!fieldState.error}
-            />
-            {fieldState.error && (
-              <FormHelperText>{fieldState.error.message}</FormHelperText>
-            )}
-          </FormControl>
-        )}
-      />
-
-      {/* Ubigeo */}
-      <Controller
-        name="idUbigeo"
-        control={control}
-        rules={{ required: "Ubigeo es obligatorio" }}
-        render={({ field, fieldState }) => (
-          <FormControl error={!!fieldState.error}>
-            <Autocomplete
-              options={ubigeoOptions}
-              getOptionLabel={getUbigeoLabel}
-              filterOptions={(options) => options}
-              loading={loading}
-              onInputChange={(e, value) => buscarUbigeos(value)}
-              value={field.value}
-              onChange={(e, newValue) => field.onChange(newValue)}
-              disabled={isReadOnly}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Ubigeo"
-                  error={!!fieldState.error}
-                />
+      <Card elevation={1}>
+        <CardContent>
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onFormSubmit)}
+            sx={{ display: "flex", gap: 2, flexDirection: "column" }}
+          >
+            {/* Nombre */}
+            <Controller
+              name="nombreUsuario"
+              control={control}
+              rules={{ required: "Nombre es obligatorio" }}
+              render={({ field, fieldState }) => (
+                <FormControl error={!!fieldState.error}>
+                  <TextField
+                    {...field}
+                    label="Nombre"
+                    inputProps={{ maxLength: 100 }}
+                    disabled={isReadOnly}
+                    error={!!fieldState.error}
+                  />
+                  {fieldState.error && (
+                    <FormHelperText>{fieldState.error.message}</FormHelperText>
+                  )}
+                </FormControl>
               )}
             />
-            {fieldState.error && (
-              <FormHelperText>{fieldState.error.message}</FormHelperText>
-            )}
-          </FormControl>
-        )}
-      />
 
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Controller
-          name="feNacimiento"
-          control={control}
-          defaultValue={null}
-          rules={{ required: "Fecha de nacimiento es obligatoria" }}
-          render={({ field, fieldState }) => (
-            <DatePicker
-              label="Fecha de Nacimiento"
-              format="DD/MM/YYYY"
-              value={field.value}
-              onChange={(value) => field.onChange(value)}
-              disabled={isReadOnly}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  error: !!fieldState.error,
-                  helperText: fieldState.error?.message,
-                },
-              }}
+            {/* Correo */}
+            <Controller
+              name="correoUsuario"
+              control={control}
+              rules={{ required: "Correo es obligatorio" }}
+              render={({ field, fieldState }) => (
+                <FormControl error={!!fieldState.error}>
+                  <TextField
+                    {...field}
+                    label="Correo"
+                    type="email"
+                    inputProps={{ maxLength: 100 }}
+                    disabled={isReadOnly}
+                    error={!!fieldState.error}
+                  />
+                  {fieldState.error && (
+                    <FormHelperText>{fieldState.error.message}</FormHelperText>
+                  )}
+                </FormControl>
+              )}
             />
-          )}
-        />
-      </LocalizationProvider>
 
-      {!isReadOnly && (
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={loading}
-        >
-          {loading ? "Creando..." : isEdit ? "Modificar" : "Crear"}
-        </Button>
-      )}
-    </Box>
+            {/* Ubigeo */}
+            <Controller
+              name="idUbigeo"
+              control={control}
+              rules={{ required: "Ubigeo es obligatorio" }}
+              render={({ field, fieldState }) => (
+                <FormControl error={!!fieldState.error}>
+                  <Autocomplete
+                    options={ubigeoOptions}
+                    getOptionLabel={getUbigeoLabel}
+                    filterOptions={(options) => options}
+                    loading={loading}
+                    onInputChange={(e, value) => buscarUbigeos(value)}
+                    value={field.value}
+                    onChange={(e, newValue) => field.onChange(newValue)}
+                    disabled={isReadOnly}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Ubigeo"
+                        error={!!fieldState.error}
+                      />
+                    )}
+                  />
+                  {fieldState.error && (
+                    <FormHelperText>{fieldState.error.message}</FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            />
+
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Controller
+                name="feNacimiento"
+                control={control}
+                defaultValue={null}
+                rules={{ required: "Fecha de nacimiento es obligatoria" }}
+                render={({ field, fieldState }) => (
+                  <DatePicker
+                    label="Fecha de Nacimiento"
+                    format="DD/MM/YYYY"
+                    value={field.value}
+                    onChange={(value) => field.onChange(value)}
+                    disabled={isReadOnly}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!fieldState.error,
+                        helperText: fieldState.error?.message,
+                      },
+                    }}
+                  />
+                )}
+              />
+            </LocalizationProvider>
+
+            {!isReadOnly && (
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+              >
+                {loading ? "Creando..." : isEdit ? "Modificar" : "Crear"}
+              </Button>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

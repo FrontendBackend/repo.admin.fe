@@ -1,6 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
-import { Box, Container, LinearProgress } from "@mui/material";
+import {
+  Box,
+  Container,
+  LinearProgress,
+} from "@mui/material";
 import {
   crearUsuario,
   eliminarUsuario,
@@ -10,7 +14,6 @@ import FormularioUsuario from "./FormularioUsuario";
 import ListaUsuario from "./ListaUsuario";
 import TipoResultado from "../../utils/TipoResultado";
 import { useNavigate } from "react-router-dom";
-import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import { useSnackbar } from "../../context/SnackbarContext";
 
 const PageUsuario = () => {
@@ -138,19 +141,22 @@ const PageUsuario = () => {
 
   return (
     <Container>
-      <Box sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 9999 }}>
+      <Box
+        sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 9999 }}
+      >
         {loading && <LinearProgress />}
       </Box>
 
-      <ToolbarDinamico titulo="Gestión de usuarios" ocultar={false} />
       <FormularioUsuario
         onSubmit={handleCrearModificarUsuario}
         initialData={selectedUsuario}
       />
+
       <br />
       <ListaUsuario
         usuarios={usuarios}
         onDelete={handleEliminarUsuario}
+        onEdit={(usuario) => navigate(`/usuarios/editar/${usuario.idUsuario}`)}
         onView={(usuario) => navigate(`/usuarios/ver/${usuario.idUsuario}`)}
       />
     </Container>

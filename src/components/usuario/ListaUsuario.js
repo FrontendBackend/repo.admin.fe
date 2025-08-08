@@ -15,16 +15,15 @@ import {
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { useState } from "react";
-import ConfirmDialog from "../../utils/ConfirmDialog";
-import { useNavigate } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import dayjs from "dayjs";
+import { useConfirmDialog } from "../../context/ConfirmDialogContext";
 
-const ListaUsuario = ({ usuarios, onDelete, onView }) => {
-  const [confirmOpen, setConfirmOpen] = useState(false);
+const ListaUsuario = ({ usuarios, onDelete, onEdit, onView }) => {
+  const { showConfirm } = useConfirmDialog();
   const [selectedUsuario, setSelectedUsuario] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -39,19 +38,22 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
   };
 
   const handleEliminarClick = (usuario) => {
-    setSelectedUsuario(usuario); // Guarda todo el usuario
-    setConfirmOpen(true);
+    showConfirm({
+      title: "Eliminar usuario",
+      message: (
+        <>
+          ¿Estás seguro de eliminar a{" "}
+          <strong>"{selectedUsuario.nombreUsuario}"</strong>? Esta acción no se
+          puede deshacer.
+        </>
+      ),
+      onConfirm: () => {
+        onDelete(selectedUsuario.idUsuario);
+        setSelectedUsuario(usuario); // Guarda todo el usuario
+        handleMenuClose();
+      },
+    });
   };
-
-  const handleConfirmarEliminar = () => {
-    onDelete(selectedUsuario.idUsuario);
-    setConfirmOpen(false);
-    setSelectedUsuario(null);
-    handleMenuClose();
-  };
-
-  // dentro del componente
-  const navigate = useNavigate();
 
   return (
     <>
@@ -151,13 +153,14 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
               >
                 <MenuItem
                   onClick={() => {
-                    navigate(`/usuarios/editar/${selectedUsuario?.idUsuario}`);
+                    onEdit(selectedUsuario);
                     handleMenuClose();
                   }}
                 >
                   <EditIcon />
                   Modificar usuario
                 </MenuItem>
+
                 <MenuItem
                   onClick={() => {
                     onView(selectedUsuario);
@@ -167,6 +170,7 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
                   <VisibilityIcon />
                   Ver detalle usuario
                 </MenuItem>
+
                 <MenuItem
                   onClick={() => {
                     handleEliminarClick(selectedUsuario);
@@ -180,22 +184,6 @@ const ListaUsuario = ({ usuarios, onDelete, onView }) => {
           </Table>
         )}
       </TableContainer>
-
-      <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={handleConfirmarEliminar}
-        title="¿Eliminar usuario?"
-        message={
-          selectedUsuario && (
-            <>
-              ¿Estás seguro de eliminar a{" "}
-              <strong>"{selectedUsuario.nombreUsuario}"</strong>? Esta acción no
-              se puede deshacer.
-            </>
-          )
-        }
-      />
     </>
   );
 };
