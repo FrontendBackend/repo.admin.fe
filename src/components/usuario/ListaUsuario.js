@@ -47,6 +47,8 @@ const ListaUsuario = ({ usuarios, onDelete, onEdit, onView }) => {
           puede deshacer.
         </>
       ),
+      confirmText: "Eliminar",
+      confirmColor: "error",
       onConfirm: () => {
         onDelete(selectedUsuario.idUsuario);
         setSelectedUsuario(usuario); // Guarda todo el usuario

@@ -7,7 +7,17 @@ import {
   Button,
 } from "@mui/material";
 
-const ConfirmDialog = ({ open, onClose, onConfirm, title, message }) => {
+const ConfirmDialog = ({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = "Aceptar",
+  confirmColor = "primary",
+  showCancelButton = true,
+  showConfirmButton = true,
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title || "¿Estás seguro?"}</DialogTitle>
@@ -17,17 +27,19 @@ const ConfirmDialog = ({ open, onClose, onConfirm, title, message }) => {
             whiteSpace: "normal",
             wordBreak: "break-word",
             overflowWrap: "break-word",
-            maxWidth: "400px", // o el valor que desees
+            maxWidth: "400px",
           }}
         >
           {message || "Esta acción no se puede deshacer."}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={onConfirm} color="error" variant="contained">
-          Eliminar
-        </Button>
+        {showCancelButton && <Button onClick={onClose}>Cancelar</Button>}
+        {showConfirmButton && (
+          <Button onClick={onConfirm} color={confirmColor} variant="contained">
+            {confirmText}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

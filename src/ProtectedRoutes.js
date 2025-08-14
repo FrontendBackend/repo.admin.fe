@@ -7,6 +7,7 @@ import SettingsPage from "./SettingsPage";
 import PageUsuario from "./components/usuario/PageUsuario";
 import PageUsuarioDetalle from "./components/usuario/PageUsuarioDetalle";
 import PageListaPersona from "./components/persona/PageListaPersona";
+import PageGeneralPersona from "./components/persona/PageGeneralPersona";
 
 const ProtectedRoutes = () => {
   return (
@@ -18,13 +19,24 @@ const ProtectedRoutes = () => {
 
         {/* Usuarios */}
         <Route path="/usuarios" element={<PageUsuario />} />
-        <Route path="/usuarios/editar/:idUsuario" element={<PageUsuarioDetalle />} />
-        <Route path="/usuarios/ver/:idUsuario" element={<PageUsuarioDetalle />} />
+        <Route
+          path="/usuarios/editar/:idUsuario"
+          element={<PageUsuarioDetalle />}
+        />
+        <Route
+          path="/usuarios/ver/:idUsuario"
+          element={<PageUsuarioDetalle />}
+        />
 
         {/* Personas  */}
         <Route path="/personas" element={<PageListaPersona />} />
-        <Route path="/personas/crearPersonaNatural" element={<PageListaPersona />} />
-        <Route path="/personas/editarPersonaNatural/:idPersonaNatural" element={<PageListaPersona />} />
+
+        <Route path="/personas/crear/:tipo" element={<PageGeneralPersona />} />
+
+        <Route
+          path="/personas/editarPersonaNatural/:idPersonaNatural"
+          element={<PageGeneralPersona />}
+        />
 
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>

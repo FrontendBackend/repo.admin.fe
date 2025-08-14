@@ -11,16 +11,32 @@ export const ConfirmDialogProvider = ({ children }) => {
     open: false,
     title: "",
     message: "",
+    confirmText: "Aceptar",
+    confirmColor: "primary",
+    showConfirmButton: true,
+    showCancelButton: true,
     onConfirm: () => {},
   });
 
-  const showConfirm = ({ title, message, onConfirm }) => {
+  const showConfirm = ({
+    title,
+    message,
+    confirmText,
+    confirmColor,
+    showConfirmButton = true,
+    showCancelButton = true,
+    onConfirm,
+  }) => {
     setDialogState({
       open: true,
       title,
       message,
+      confirmText: confirmText || "Aceptar",
+      confirmColor: confirmColor || "primary",
+      showConfirmButton,
+      showCancelButton,
       onConfirm: () => {
-        onConfirm();
+        if (onConfirm) onConfirm();
         setDialogState((prev) => ({ ...prev, open: false }));
       },
     });
@@ -38,6 +54,10 @@ export const ConfirmDialogProvider = ({ children }) => {
         onConfirm={dialogState.onConfirm}
         title={dialogState.title}
         message={dialogState.message}
+        confirmText={dialogState.confirmText}
+        confirmColor={dialogState.confirmColor}
+        showConfirmButton={dialogState.showConfirmButton}
+        showCancelButton={dialogState.showCancelButton}
       />
     </ConfirmDialogContext.Provider>
   );
