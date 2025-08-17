@@ -6,10 +6,6 @@ import {
   Box,
   Button,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   LinearProgress,
 } from "@mui/material";
 import { eliminarPersona, listarPersona } from "../../services/PersonaServices";
@@ -17,6 +13,9 @@ import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import TarjetaPersona from "./TarjetaPersona";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useNavigate } from "react-router-dom";
+import TipoAccion from "../../utils/TipoAccion";
+import DialogoPersona from "./DialogoPersona";
+import Constantes from "../../utils/Constantes";
 
 const PageListaPersona = () => {
   const { showSnackbar } = useSnackbar();
@@ -64,15 +63,15 @@ const PageListaPersona = () => {
   };
 
   /**
-   * La función `handleNavigate` establece la carga como verdadera y navega a una 
+   * La función `handleNavgCrearPersona` establece la carga como verdadera y navega a una
    * URL específica según el parámetro tipo proporcionado.
-   * @param tipo: El parámetro `tipo` de la función `handleNavigate` es una variable que representa 
-   * el tipo de persona que se creará. Se utiliza para construir la URL para navegar a la página 
+   * @param tipo: El parámetro `tipo` de la función `handleNavgCrearPersona` es una variable que representa
+   * el tipo de persona que se creará. Se utiliza para construir la URL para navegar a la página
    * de creación de la persona con el tipo especificado.
    */
-  const handleNavigate = (tipo) => {
+  const handleNavgCrearPersona = (tipo) => {
     setLoading(true);
-    navigate(`/personas/crear/${tipo}`);
+    navigate(`/personas/${TipoAccion.CREAR}/${tipo}`);
   };
 
   /**
@@ -121,7 +120,7 @@ const PageListaPersona = () => {
    * cualquier otro valor de `idTipoDocIdentidad`.
    */
   const getTipoPersona = (idTipoDocIdentidad) => {
-    if (idTipoDocIdentidad === 2) return "juridica";
+    if (idTipoDocIdentidad === Constantes.TIPOS_DOCUMENTO.RUC) return "juridica";
     return "natural";
   };
 
@@ -131,9 +130,18 @@ const PageListaPersona = () => {
    * @param persona: el parámetro `persona` es un objeto que representa a una persona y probablemente contiene
    * propiedades como `idTipoDocIdentidad` e `idPersona`.
    */
-  const handleEditarPersona = async (persona) => {
+  const handleNavgEditarPersona = async (persona) => {
     const tipoPersona = getTipoPersona(persona.idTipoDocIdentidad);
-    navigate(`/personas/editar/${tipoPersona}/${persona.idPersona}`);
+    navigate(
+      `/personas/${TipoAccion.EDITAR}/${tipoPersona}/${persona.idPersona}`
+    );
+  };
+
+  const handleNavgConsultarPersona = async (persona) => {
+    const tipoPersona = getTipoPersona(persona.idTipoDocIdentidad);
+    navigate(
+      `/personas/${TipoAccion.CONSULTAR}/${tipoPersona}/${persona.idPersona}`
+    );
   };
 
   return (
@@ -150,6 +158,7 @@ const PageListaPersona = () => {
       />
 
       <Button
+        sx={{ mb: 2 }}
         onClick={() => setOpenDialog(true)}
         variant="contained"
         startIcon={<AddCircleOutlineIcon />}
@@ -157,52 +166,19 @@ const PageListaPersona = () => {
         Agregar
       </Button>
 
-      <Box sx={{ p: 1 }} />
-
       {/* Tarjeta de listas de personas */}
       <TarjetaPersona
         personas={personas}
         onDelete={handleEliminarPersona}
-        onEdit={handleEditarPersona}
+        onEdit={handleNavgEditarPersona}
+        onConsulta={handleNavgConsultarPersona}
       />
 
-      {/* Dialogo para agregar persona */}
-      <Dialog
-        open={openDialog}
-        onClose={(event, reason) => {
-          if (reason === "backdropClick" || reason === "escapeKeyDown") {
-            return; // Evita que se cierre
-          }
-          setOpenDialog(false);
-        }}
-        fullWidth
-      >
-        <DialogTitle>Seleccionar persona natural o jrídica</DialogTitle>
-        <DialogContent>
-          <Button
-            disabled={loading}
-            fullWidth
-            variant="contained"
-            onClick={() => handleNavigate("natural")}
-          >
-            Persona Natural
-          </Button>
-          <Box sx={{ my: 1 }} />
-          <Button
-            fullWidth
-            disabled={loading}
-            variant="contained"
-            onClick={() => handleNavigate("juridica")}
-          >
-            Persona Jurídica
-          </Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} variant="contained">
-            Cancelar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DialogoPersona
+        onCreate={handleNavgCrearPersona}
+        setOpenDialog={setOpenDialog}
+        openDialog={openDialog}
+      ></DialogoPersona>
     </Container>
   );
 };

@@ -31,13 +31,14 @@ const ProtectedRoutes = () => {
         {/* Personas  */}
         <Route path="/personas" element={<PageListaPersona />} />
 
-        <Route path="/personas/crear/:tipo" element={<PageGeneralPersona />} />
-        <Route path="/personas/editar/:tipo/:idPersona" element={<PageGeneralPersona />} />
+        {/* <Route path="/personas/crear/:tipo" element={<PageGeneralPersona />} /> */}
+        <Route path="/personas/:tipoAccion/:tipo" element={<PageGeneralPersona />} />
+        {/* <Route path="/personas/editar/:tipo/:idPersona" element={<PageGeneralPersona />} /> */}
+        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageGeneralPersona />} />
+        {/* <Route path="/personas/consultar/:tipo/:idPersona" element={<PageGeneralPersona />} /> */}
+        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageGeneralPersona />} />
 
-        <Route
-          path="/personas/editarPersonaNatural/:idPersonaNatural"
-          element={<PageGeneralPersona />}
-        />
+       
 
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>

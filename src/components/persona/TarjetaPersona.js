@@ -1,27 +1,34 @@
 import {
   Avatar,
   Box,
-  Button,
   Card,
   CardActionArea,
   CardActions,
   CardContent,
   CardHeader,
+  IconButton,
   LinearProgress,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { useConfirmDialog } from "../../context/ConfirmDialogContext";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
-const TarjetaPersona = ({ personas, onDelete, onEdit }) => {
+const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
   const [loading, setLoading] = useState(false);
   const { showConfirm } = useConfirmDialog();
 
   const handleEditar = async (persona) => {
     setLoading(true);
     onEdit(persona);
+  };
+
+  const handleConsultar = async (persona) => {
+    setLoading(true);
+    onConsulta(persona);
   };
 
   const handleEliminar = async (persona) => {
@@ -91,24 +98,38 @@ const TarjetaPersona = ({ personas, onDelete, onEdit }) => {
               </CardContent>
             </CardActionArea>
             <CardActions sx={{ justifyContent: "flex-end" }}>
-              <Button
-                size="small"
-                color="primary"
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => handleEditar(persona)}
-              >
-                Editar
-              </Button>
-              <Button
-                size="small"
-                color="error"
-                variant="contained"
-                startIcon={<DeleteIcon />}
-                onClick={() => handleEliminar(persona)}
-              >
-                Editar
-              </Button>
+              <Tooltip title="Editar">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  variant="contained"
+                  onClick={() => handleEditar(persona)}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Consultar">
+                <IconButton
+                  size="small"
+                  color="primary"
+                  variant="contained"
+                  onClick={() => handleConsultar(persona)}
+                >
+                  <VisibilityIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Eliminar">
+                <IconButton
+                  size="small"
+                  color="error"
+                  variant="contained"
+                  onClick={() => handleEliminar(persona)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
             </CardActions>
           </Card>
         ))}

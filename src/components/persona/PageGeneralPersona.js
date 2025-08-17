@@ -34,9 +34,12 @@ import {
   obtenerPersonaPorId,
 } from "../../services/PersonaServices";
 import dayjs from "dayjs";
+import Constantes from "../../utils/Constantes";
+import TipoAccion from "../../utils/TipoAccion";
 
 const PageGeneralPersona = () => {
-  const { tipo, idPersona } = useParams(); // 'natural' o 'juridica'
+  const { tipoAccion, tipo, idPersona } = useParams(); // 'natural' o 'juridica'
+  const modoLectura = (tipoAccion === TipoAccion.CONSULTAR.toString()) ? true : false;
   const modo = idPersona ? "editar" : "crear"; // Si id existe => edición, si no => creación
   const { handleSubmit, control, reset, watch } = useForm({
     defaultValues: {
@@ -53,7 +56,10 @@ const PageGeneralPersona = () => {
       esRegistro: "",
       feNacimiento: "",
       flConsorcio: "",
-      idTipoDocIdentidad: tipo === "juridica" ? 2 : 1,
+      idTipoDocIdentidad:
+        tipo === "juridica"
+          ? Constantes.TIPOS_DOCUMENTO.RUC
+          : Constantes.TIPOS_DOCUMENTO.DNI, // Para mostrar inicialmente el RUC = 2 o de lo contrario el DNI = 1 en el formulario
       idUbigeo: "",
       noCorto: "",
       noPersona: "",
@@ -71,6 +77,8 @@ const PageGeneralPersona = () => {
   const tipoPersona = watch("idTipoDocIdentidad"); // natural o juridica
 
   useEffect(() => {
+    console.log("tipoPersona:", tipoPersona);
+    console.log("tipoAccion:", tipoAccion);
     handleObtenerPersonaPorId(idPersona);
     handleListarTiposDocumento();
   }, [idPersona]);
@@ -106,7 +114,23 @@ const PageGeneralPersona = () => {
 
   const handleListarTiposDocumento = async () => {
     const respuesta = await listarTiposDocumento();
-    setTiposDocumento(respuesta.data);
+    let filtrados = respuesta.data;
+
+    if (tipoPersona === Constantes.TIPOS_DOCUMENTO.RUC) {
+      // Solo RUC
+      filtrados = respuesta.data.filter(
+        (doc) => doc.idValorParametro === Constantes.TIPOS_DOCUMENTO.RUC
+      );
+    } else {
+      // DNI y Carnet de Extranjería
+      filtrados = respuesta.data.filter(
+        (doc) =>
+          doc.idValorParametro === Constantes.TIPOS_DOCUMENTO.DNI ||
+          doc.idValorParametro === Constantes.TIPOS_DOCUMENTO.CE
+      );
+    }
+
+    setTiposDocumento(filtrados);
   };
 
   /**
@@ -294,6 +318,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Apellido Paterno"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -316,6 +341,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Apellido Materno"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -338,6 +364,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Nombre completo"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -375,11 +402,11 @@ const PageGeneralPersona = () => {
                         value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value)}
                         disabled={
-                          (modo === "crear" || modo === "editar") &&
-                          tipo === "juridica"
+                          modoLectura ||
+                          ((modo === "crear" || modo === "editar") &&
+                          tipo === "juridica")
                         } // 🔹 Se bloquea si es jurídica
                       >
-                        <MenuItem value="">Seleccione</MenuItem>
                         {tiposDocumento.map((tipo) => (
                           <MenuItem
                             key={tipo.idValorParametro}
@@ -410,6 +437,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Documento de Identidad"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -434,7 +462,7 @@ const PageGeneralPersona = () => {
                         format="DD/MM/YYYY"
                         value={field.value ? dayjs(field.value) : null}
                         onChange={(value) => field.onChange(value)}
-                        // disabled={isReadOnly}
+                        disabled={modoLectura}
                         slotProps={{
                           textField: {
                             fullWidth: true,
@@ -459,6 +487,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Nombre prefiijo persona"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                         fullWidth
                       />
                       {fieldState.error && (
@@ -492,6 +521,7 @@ const PageGeneralPersona = () => {
                         label="Correo"
                         type="email"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -515,6 +545,7 @@ const PageGeneralPersona = () => {
                         label="Correo adicional"
                         type="email"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -537,6 +568,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Teléfono"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -559,6 +591,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Teléfono adicional"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -581,6 +614,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Dirección"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                         fullWidth
                       />
                       {fieldState.error && (
@@ -617,6 +651,7 @@ const PageGeneralPersona = () => {
                             {...params}
                             label="Ubigeo"
                             error={!!fieldState.error}
+                            disabled={modoLectura}
                           />
                         )}
                       />
@@ -647,6 +682,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value)}
+                        disabled={modoLectura}
                       >
                         <MenuItem value="">Seleccione su género</MenuItem>
                         <MenuItem value="M">Masculino</MenuItem>
@@ -688,6 +724,7 @@ const PageGeneralPersona = () => {
                         label="Razón social"
                         inputProps={{ maxLength: 100 }}
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                         fullWidth
                       />
                       {fieldState.error && (
@@ -717,6 +754,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value)}
+                        disabled={modoLectura}
                       >
                         <MenuItem value="">Seleccione</MenuItem>
                         <MenuItem value="1">Sí</MenuItem>
@@ -743,6 +781,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         label="Nombre corto"
                         error={!!fieldState.error}
+                        disabled={modoLectura}
                         fullWidth
                       />
                       {fieldState.error && (
@@ -780,6 +819,7 @@ const PageGeneralPersona = () => {
                         {...field}
                         value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value)}
+                        disabled={modoLectura}
                       >
                         <MenuItem value="">Seleccione</MenuItem>
                         <MenuItem value="1">Sí</MenuItem>
@@ -813,6 +853,7 @@ const PageGeneralPersona = () => {
                             ? field.value.replace(/<br\s*\/?>/gi, "\n")
                             : ""
                         }
+                        disabled={modoLectura}
                         fullWidth
                       />
                       {fieldState.error && (
@@ -828,7 +869,7 @@ const PageGeneralPersona = () => {
           </CardContent>
         </Card>
 
-        <Box mt={0}>
+        {!modoLectura && <Box mt={0}>
           <Button
             loadingPosition="start"
             type="submit"
@@ -840,7 +881,7 @@ const PageGeneralPersona = () => {
           >
             Guardar
           </Button>
-        </Box>
+        </Box>}
       </Box>
     </Container>
   );
