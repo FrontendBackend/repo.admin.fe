@@ -1,5 +1,11 @@
 // src/components/ToolbarUsuario.jsx
-import { Box, Button, Toolbar, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Toolbar,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
@@ -23,15 +29,14 @@ const ToolbarDinamico = ({
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {ocultar && (
-          <Button
-            startIcon={<ArrowBackIcon />}
+          <IconButton
             onClick={() => navigate(rutaVolver)}
             sx={{
               color: theme.palette.text.primary, // ajusta color del texto según el tema
             }}
           >
-            Volver
-          </Button>
+            <ArrowBackIcon />
+          </IconButton>
         )}
 
         {titulo && (

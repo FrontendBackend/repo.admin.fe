@@ -32,6 +32,7 @@ const ProtectedRoutes = () => {
         <Route path="/personas" element={<PageListaPersona />} />
 
         <Route path="/personas/crear/:tipo" element={<PageGeneralPersona />} />
+        <Route path="/personas/editar/:tipo/:idPersona" element={<PageGeneralPersona />} />
 
         <Route
           path="/personas/editarPersonaNatural/:idPersonaNatural"

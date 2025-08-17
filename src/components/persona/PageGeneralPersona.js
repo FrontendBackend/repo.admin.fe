@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import debounce from "lodash.debounce";
 import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import {
@@ -6,21 +7,19 @@ import {
   Button,
   Card,
   CardContent,
-  cardContentClasses,
   Container,
   FormControl,
   FormHelperText,
   Grid,
   InputLabel,
+  LinearProgress,
   MenuItem,
-  Paper,
   Select,
   TextField,
-  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { filtrarUbigeo } from "../../services/UbigeoServices";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -28,20 +27,18 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { listarTiposDocumento } from "../../services/ValorParametroServices";
 import { useSnackbar } from "../../context/SnackbarContext";
 import TipoResultado from "../../utils/TipoResultado";
-import styled from "@emotion/styled";
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: (theme.vars ?? theme).palette.text.secondary,
-  ...theme.applyStyles("dark", {
-    backgroundColor: "#1A2027",
-  }),
-}));
+import SaveIcon from "@mui/icons-material/Save";
+import {
+  crearPersona,
+  modificarPersona,
+  obtenerPersonaPorId,
+} from "../../services/PersonaServices";
+import dayjs from "dayjs";
+
 const PageGeneralPersona = () => {
-  const { tipo } = useParams(); // 'natural' o 'juridica'
-  const { handleSubmit, control } = useForm({
+  const { tipo, idPersona } = useParams(); // 'natural' o 'juridica'
+  const modo = idPersona ? "editar" : "crear"; // Si id existe => edición, si no => creación
+  const { handleSubmit, control, reset, watch } = useForm({
     defaultValues: {
       apMaterno: "",
       apPaterno: "",
@@ -56,37 +53,72 @@ const PageGeneralPersona = () => {
       esRegistro: "",
       feNacimiento: "",
       flConsorcio: "",
-      idTipoDocIdentidad: "",
+      idTipoDocIdentidad: tipo === "juridica" ? 2 : 1,
       idUbigeo: "",
       noCorto: "",
       noPersona: "",
       noPrefijoPersona: "",
-      noRazoSocial: "",
+      noRazonSocial: "",
       tiSexo: "",
     },
   });
   const [ubigeoOptions, setUbigeoOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingUbigeo, setLoadingUbigeo] = useState(false);
   const [tiposDocumento, setTiposDocumento] = useState([]);
   const { showSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+  const tipoPersona = watch("idTipoDocIdentidad"); // natural o juridica
 
   useEffect(() => {
+    handleObtenerPersonaPorId(idPersona);
     handleListarTiposDocumento();
-  }, []);
+  }, [idPersona]);
+
+  const handleObtenerPersonaPorId = async (idPersona) => {
+    if (idPersona) {
+      const res = await obtenerPersonaPorId(idPersona);
+      if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
+        const ubigeoObj = {
+          idUbigeo: res.data?.idUbigeo,
+          descNombreUbigeo: res.data?.descNombreUbigeo,
+        };
+        reset({ ...res.data, idUbigeo: ubigeoObj });
+      } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
+        showSnackbar({
+          open: true,
+          mensaje: res.mensaje,
+          severity: TipoResultado.WARNING.toString().toLowerCase(),
+        });
+      } else {
+        showSnackbar({
+          open: true,
+          mensaje: res.mensaje,
+          severity: TipoResultado.ERROR.toString().toLowerCase(),
+        });
+      }
+    }
+  };
+
+  // const documentosFiltrados = tiposDocumento.filter(
+  //   (doc) => !tipoPersona || doc.idValorParametro === tipoPersona
+  // );
 
   const handleListarTiposDocumento = async () => {
     const respuesta = await listarTiposDocumento();
     setTiposDocumento(respuesta.data);
   };
-  // fetch("/api/tipos-documento") // Cambia por tu endpoint real
-  //   .then((res) => res.json())
-  //   .then((data) => setTiposDocumento(data))
-  //   .catch((err) => console.error("Error cargando tipos de documento:", err));
 
-  // Función para obtener el label visible
+  /**
+   * ========================================
+   * Función para obtener el label visible
+   * ========================================
+   * @param {*} ubigeo
+   * @returns
+   */
   const getUbigeoLabel = (ubigeo) => {
     if (!ubigeo) return "";
-    if (ubigeo.nombreUbigeo) return ubigeo.nombreUbigeo;
+    if (ubigeo.descNombreUbigeo) return ubigeo.descNombreUbigeo;
 
     const partes = [
       ubigeo.departamento,
@@ -96,22 +128,105 @@ const PageGeneralPersona = () => {
     return partes.join(", ");
   };
 
-  // Debounce para la búsqueda de ubigeos
+  /**
+   * ========================================
+   * Función para buscar los ubigeos
+   * =========================================
+   * @function buscarUbigeos
+   * @param {string} filtro - El texto de búsqueda.
+   * @returns {Promise<void>} Una promesa que se resuelve cuando se termina de buscar los ubigeos.
+   */
   const buscarUbigeos = debounce(async (filtro) => {
     if (!filtro || filtro.length < 2) return;
-    setLoading(true);
+    setLoadingUbigeo(true);
     try {
       const response = await filtrarUbigeo(filtro);
       setUbigeoOptions(response.data);
     } catch (error) {
       console.error("Error al buscar ubigeos", error);
     } finally {
-      setLoading(false);
+      setLoadingUbigeo(false);
     }
   }, 500);
 
+  /**
+   * ================================================================================
+   * Permite enviar los datos de la persona para su creación o edición
+   * ================================================================================
+   * @param {*} data
+   */
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      setLoading(true);
+
+      const dataFinal = {
+        ...data,
+        idUbigeo: data.idUbigeo ? data.idUbigeo.idUbigeo : null,
+        feNacimiento: data.feNacimiento
+          ? dayjs(data.feNacimiento).format("DD-MM-YYYY")
+          : null,
+        cmNota: data.cmNota.replace(/\n/g, "<br>"),
+      };
+      console.log(dataFinal);
+
+      if (modo === "crear") {
+        const res = await crearPersona(dataFinal);
+
+        if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
+          navigate(`/personas/editar/${tipo}/${res.data.idPersona}`);
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.SUCCESS.toString().toLowerCase(),
+          });
+          setLoading(false);
+        } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.WARNING.toString().toLowerCase(),
+          });
+          setLoading(false);
+        } else {
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.ERROR.toString().toLowerCase(),
+          });
+        }
+      } else {
+        // Actualizar persona existente
+        const res = await modificarPersona(data.idPersona, dataFinal);
+
+        if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.SUCCESS.toString().toLowerCase(),
+          });
+          setLoading(false);
+        } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.WARNING.toString().toLowerCase(),
+          });
+          setLoading(false);
+        } else {
+          showSnackbar({
+            open: true,
+            mensaje: res.mensaje,
+            severity: TipoResultado.ERROR.toString().toLowerCase(),
+          });
+        }
+      }
+    } catch (e) {
+      showSnackbar({
+        open: true,
+        mensaje: e.message,
+        severity: TipoResultado.ERROR.toString().toLowerCase(),
+      });
+    }
   };
 
   const onError = (errors) => {
@@ -127,6 +242,19 @@ const PageGeneralPersona = () => {
 
   return (
     <Container>
+      {loading && (
+        <Box
+          sx={{
+            width: "100%",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 9999,
+          }}
+        >
+          <LinearProgress />
+        </Box>
+      )}
       <ToolbarDinamico
         titulo={
           tipo === "natural"
@@ -142,18 +270,20 @@ const PageGeneralPersona = () => {
         onSubmit={handleSubmit(onSubmit, onError)}
         sx={{ display: "flex", gap: 2, flexDirection: "column" }}
       >
+        {/* Card de Datos Personales */}
         <Card>
           <CardContent>
             <strong>Datos personales</strong>
-            <Box sx={{ p: 1 }}></Box>
 
             <Grid
+              mt={2}
+              mb={2}
               container
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Apellido Paterno */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Apellido Paterno */}
                 <Controller
                   name="apPaterno"
                   rules={{ required: "Es requerido" }}
@@ -174,8 +304,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Apellido Materno */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Apellido Materno */}
                 <Controller
                   name="apMaterno"
                   control={control}
@@ -196,8 +326,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Nombre */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Nombre */}
                 <Controller
                   name="noPersona"
                   control={control}
@@ -220,15 +350,14 @@ const PageGeneralPersona = () => {
               </Grid>
             </Grid>
 
-            <Box sx={{ p: 1 }}></Box>
-
             <Grid
+              item
               container
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Tipo de documento */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Tipo de documento */}
                 <Controller
                   name="idTipoDocIdentidad"
                   control={control}
@@ -245,6 +374,10 @@ const PageGeneralPersona = () => {
                         {...field}
                         value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value)}
+                        disabled={
+                          (modo === "crear" || modo === "editar") &&
+                          tipo === "juridica"
+                        } // 🔹 Se bloquea si es jurídica
                       >
                         <MenuItem value="">Seleccione</MenuItem>
                         {tiposDocumento.map((tipo) => (
@@ -265,8 +398,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Documento Identidad */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Documento Identidad */}
                 <Controller
                   name="coDocumentoIdentidad"
                   control={control}
@@ -287,8 +420,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Fecha Nacimiento */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Fecha Nacimiento */}
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <Controller
                     name="feNacimiento"
@@ -299,7 +432,7 @@ const PageGeneralPersona = () => {
                       <DatePicker
                         label="Fecha de Nacimiento"
                         format="DD/MM/YYYY"
-                        value={field.value || null}
+                        value={field.value ? dayjs(field.value) : null}
                         onChange={(value) => field.onChange(value)}
                         // disabled={isReadOnly}
                         slotProps={{
@@ -314,8 +447,8 @@ const PageGeneralPersona = () => {
                   />
                 </LocalizationProvider>
               </Grid>
+              {/* Nombre prefijo persona*/}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Nombre prefijo persona*/}
                 <Controller
                   name="noPrefijoPersona"
                   control={control}
@@ -346,8 +479,8 @@ const PageGeneralPersona = () => {
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Correo */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Correo */}
                 <Controller
                   name="deCorreo"
                   control={control}
@@ -369,8 +502,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Correo adicional */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Correo adicional */}
                 <Controller
                   name="deCorreo2"
                   control={control}
@@ -392,8 +525,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Teléfono */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Teléfono */}
                 <Controller
                   name="deTelefono"
                   control={control}
@@ -414,8 +547,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Teléfono adicional*/}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Teléfono adicional*/}
                 <Controller
                   name="deTelefono2"
                   control={control}
@@ -436,8 +569,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Dirección */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Dirección */}
                 <Controller
                   name="diPersona"
                   control={control}
@@ -459,8 +592,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Ubigeo */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Ubigeo */}
                 <Controller
                   name="idUbigeo"
                   control={control}
@@ -475,7 +608,7 @@ const PageGeneralPersona = () => {
                         options={ubigeoOptions}
                         getOptionLabel={getUbigeoLabel}
                         filterOptions={(options) => options}
-                        loading={loading}
+                        loading={loadingUbigeo}
                         onInputChange={(e, value) => buscarUbigeos(value)}
                         value={field.value}
                         onChange={(e, newValue) => field.onChange(newValue)}
@@ -496,6 +629,7 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Sexo */}
               <Grid xs={12} sm={6} flex={"auto"}>
                 <Controller
                   name="tiSexo"
@@ -531,19 +665,20 @@ const PageGeneralPersona = () => {
           </CardContent>
         </Card>
 
+        {/* Card de Datos adicionales */}
         <Card>
           <CardContent>
             <strong>Otros datos</strong>
-            <Box sx={{ p: 1 }}></Box>
             <Grid
+              mt={2}
               container
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Razón social*/}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Razón social*/}
                 <Controller
-                  name="noRazoSocial"
+                  name="noRazonSocial"
                   control={control}
                   rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
@@ -564,6 +699,7 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* ¿Es consorcio?*/}
               <Grid xs={12} sm={6} flex={"auto"}>
                 <Controller
                   name="flConsorcio"
@@ -595,9 +731,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
-
+              {/* Nombre corto */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Nombre corto */}
                 <Controller
                   name="noCorto"
                   control={control}
@@ -627,8 +762,8 @@ const PageGeneralPersona = () => {
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Restricción */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Restricción */}
                 <Controller
                   name="deRestriccion"
                   control={control}
@@ -659,8 +794,8 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
+              {/* Comentario nota */}
               <Grid xs={12} sm={6} flex={"auto"}>
-                {/* Comentario nota */}
                 <Controller
                   name="cmNota"
                   control={control}
@@ -673,6 +808,11 @@ const PageGeneralPersona = () => {
                         error={!!fieldState.error}
                         multiline
                         maxRows={4}
+                        value={
+                          field.value
+                            ? field.value.replace(/<br\s*\/?>/gi, "\n")
+                            : ""
+                        }
                         fullWidth
                       />
                       {fieldState.error && (
@@ -688,10 +828,16 @@ const PageGeneralPersona = () => {
           </CardContent>
         </Card>
 
-        {/* Aquí puedes seguir agregando todos los demás campos que mencionaste */}
-
         <Box mt={0}>
-          <Button type="submit" variant="contained" color="primary">
+          <Button
+            loadingPosition="start"
+            type="submit"
+            loading={loading}
+            disabled={loading}
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+          >
             Guardar
           </Button>
         </Box>
