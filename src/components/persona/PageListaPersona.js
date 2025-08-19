@@ -4,9 +4,10 @@ import { useSnackbar } from "../../context/SnackbarContext";
 import TipoResultado from "../../utils/TipoResultado";
 import {
   Box,
-  Button,
   Container,
+  Fab,
   LinearProgress,
+  Tooltip,
 } from "@mui/material";
 import { eliminarPersona, listarPersona } from "../../services/PersonaServices";
 import ToolbarDinamico from "../../utils/ToolbarDinamico";
@@ -16,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import TipoAccion from "../../utils/TipoAccion";
 import DialogoPersona from "./DialogoPersona";
 import Constantes from "../../utils/Constantes";
+import AddIcon from "@mui/icons-material/Add";
 
 const PageListaPersona = () => {
   const { showSnackbar } = useSnackbar();
@@ -157,14 +159,18 @@ const PageListaPersona = () => {
         ocultar={false}
       />
 
-      <Button
-        sx={{ mb: 2 }}
-        onClick={() => setOpenDialog(true)}
-        variant="contained"
-        startIcon={<AddCircleOutlineIcon />}
-      >
-        Agregar
-      </Button>
+
+      <Tooltip title="Agregar Persona" placement="top">
+        <Fab
+          color="primary"
+          sx={{ mb: 2 }}
+          onClick={() => setOpenDialog(true)}
+          variant="contained"
+          startIcon={<AddCircleOutlineIcon />}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
 
       {/* Tarjeta de listas de personas */}
       <TarjetaPersona
@@ -174,6 +180,7 @@ const PageListaPersona = () => {
         onConsulta={handleNavgConsultarPersona}
       />
 
+      {/* Dialogo de creación de personas */}
       <DialogoPersona
         onCreate={handleNavgCrearPersona}
         setOpenDialog={setOpenDialog}

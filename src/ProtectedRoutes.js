@@ -8,6 +8,7 @@ import PageUsuario from "./components/usuario/PageUsuario";
 import PageUsuarioDetalle from "./components/usuario/PageUsuarioDetalle";
 import PageListaPersona from "./components/persona/PageListaPersona";
 import PageGeneralPersona from "./components/persona/PageGeneralPersona";
+import PageFormulario from "./components/persona/PageFormulario";
 
 const ProtectedRoutes = () => {
   return (
@@ -32,11 +33,11 @@ const ProtectedRoutes = () => {
         <Route path="/personas" element={<PageListaPersona />} />
 
         {/* <Route path="/personas/crear/:tipo" element={<PageGeneralPersona />} /> */}
-        <Route path="/personas/:tipoAccion/:tipo" element={<PageGeneralPersona />} />
+        <Route path="/personas/:tipoAccion/:tipo" element={<PageFormulario />} />
         {/* <Route path="/personas/editar/:tipo/:idPersona" element={<PageGeneralPersona />} /> */}
-        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageGeneralPersona />} />
+        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageFormulario />} />
         {/* <Route path="/personas/consultar/:tipo/:idPersona" element={<PageGeneralPersona />} /> */}
-        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageGeneralPersona />} />
+        <Route path="/personas/:tipoAccion/:tipo/:idPersona" element={<PageFormulario />} />
 
        
 

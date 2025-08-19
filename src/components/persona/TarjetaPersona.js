@@ -6,7 +6,7 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  IconButton,
+  Fab,
   LinearProgress,
   Tooltip,
   Typography,
@@ -99,36 +99,36 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
             </CardActionArea>
             <CardActions sx={{ justifyContent: "flex-end" }}>
               <Tooltip title="Editar">
-                <IconButton
+                <Fab
                   size="small"
                   color="primary"
                   variant="contained"
                   onClick={() => handleEditar(persona)}
                 >
                   <EditIcon />
-                </IconButton>
+                </Fab>
               </Tooltip>
 
               <Tooltip title="Consultar">
-                <IconButton
+                <Fab
                   size="small"
                   color="primary"
                   variant="contained"
                   onClick={() => handleConsultar(persona)}
                 >
                   <VisibilityIcon />
-                </IconButton>
+                </Fab>
               </Tooltip>
 
               <Tooltip title="Eliminar">
-                <IconButton
+                <Fab
                   size="small"
                   color="error"
                   variant="contained"
                   onClick={() => handleEliminar(persona)}
                 >
                   <DeleteIcon />
-                </IconButton>
+                </Fab>
               </Tooltip>
             </CardActions>
           </Card>

@@ -1,13 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import debounce from "lodash.debounce";
-import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import {
   Autocomplete,
   Box,
   Button,
   Card,
   CardContent,
-  Container,
   FormControl,
   FormHelperText,
   Grid,
@@ -19,7 +17,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { filtrarUbigeo } from "../../services/UbigeoServices";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -28,44 +26,29 @@ import { listarTiposDocumento } from "../../services/ValorParametroServices";
 import { useSnackbar } from "../../context/SnackbarContext";
 import TipoResultado from "../../utils/TipoResultado";
 import SaveIcon from "@mui/icons-material/Save";
-import {
-  crearPersona,
-  modificarPersona,
-  obtenerPersonaPorId,
-} from "../../services/PersonaServices";
+import { crearPersona, modificarPersona } from "../../services/PersonaServices";
 import dayjs from "dayjs";
 import Constantes from "../../utils/Constantes";
 import TipoAccion from "../../utils/TipoAccion";
+import { personaDefaultValues } from "../../utils/FormDefaults";
 
-const PageGeneralPersona = () => {
-  const { tipoAccion, tipo, idPersona } = useParams(); // 'natural' o 'juridica'
-  const modoLectura = (tipoAccion === TipoAccion.CONSULTAR.toString()) ? true : false;
+const PageGeneralPersona = ({
+  tipoAccion,
+  tipo,
+  idPersona,
+  dataPersona = {},
+  onUpdatePersona,
+}) => {
+  const modoLectura =
+    tipoAccion === TipoAccion.CONSULTAR.toString() ? true : false;
   const modo = idPersona ? "editar" : "crear"; // Si id existe => edición, si no => creación
   const { handleSubmit, control, reset, watch } = useForm({
     defaultValues: {
-      apMaterno: "",
-      apPaterno: "",
-      cmNota: "",
-      coDocumentoIdentidad: "",
-      deCorreo: "",
-      deCorreo2: "",
-      deRestriccion: "",
-      deTelefono: "",
-      deTelefono2: "",
-      diPersona: "",
-      esRegistro: "",
-      feNacimiento: "",
-      flConsorcio: "",
+      ...personaDefaultValues,
       idTipoDocIdentidad:
         tipo === "juridica"
           ? Constantes.TIPOS_DOCUMENTO.RUC
-          : Constantes.TIPOS_DOCUMENTO.DNI, // Para mostrar inicialmente el RUC = 2 o de lo contrario el DNI = 1 en el formulario
-      idUbigeo: "",
-      noCorto: "",
-      noPersona: "",
-      noPrefijoPersona: "",
-      noRazonSocial: "",
-      tiSexo: "",
+          : Constantes.TIPOS_DOCUMENTO.DNI,
     },
   });
   const [ubigeoOptions, setUbigeoOptions] = useState([]);
@@ -77,40 +60,30 @@ const PageGeneralPersona = () => {
   const tipoPersona = watch("idTipoDocIdentidad"); // natural o juridica
 
   useEffect(() => {
-    console.log("tipoPersona:", tipoPersona);
-    console.log("tipoAccion:", tipoAccion);
-    handleObtenerPersonaPorId(idPersona);
-    handleListarTiposDocumento();
-  }, [idPersona]);
-
-  const handleObtenerPersonaPorId = async (idPersona) => {
-    if (idPersona) {
-      const res = await obtenerPersonaPorId(idPersona);
-      if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
-        const ubigeoObj = {
-          idUbigeo: res.data?.idUbigeo,
-          descNombreUbigeo: res.data?.descNombreUbigeo,
-        };
-        reset({ ...res.data, idUbigeo: ubigeoObj });
-      } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
-        showSnackbar({
-          open: true,
-          mensaje: res.mensaje,
-          severity: TipoResultado.WARNING.toString().toLowerCase(),
-        });
-      } else {
-        showSnackbar({
-          open: true,
-          mensaje: res.mensaje,
-          severity: TipoResultado.ERROR.toString().toLowerCase(),
-        });
-      }
+    if (
+      (tipoAccion === TipoAccion.EDITAR.toString() ||
+        tipoAccion === TipoAccion.CONSULTAR.toString()) &&
+      dataPersona
+    ) {
+      // cargar datos de la persona a editar o consultar
+      const ubigeoObj = {
+        idUbigeo: dataPersona?.idUbigeo,
+        descNombreUbigeo: dataPersona?.descNombreUbigeo,
+      };
+      reset({ ...dataPersona, idUbigeo: ubigeoObj }, { keepDirtyValues: true });
+    } else if (tipoAccion === TipoAccion.CREAR.toString()) {
+      // limpiar el form
+      reset({
+        ...personaDefaultValues,
+        idTipoDocIdentidad:
+          tipo === "juridica"
+            ? Constantes.TIPOS_DOCUMENTO.RUC
+            : Constantes.TIPOS_DOCUMENTO.DNI,
+      });
     }
-  };
 
-  // const documentosFiltrados = tiposDocumento.filter(
-  //   (doc) => !tipoPersona || doc.idValorParametro === tipoPersona
-  // );
+    handleListarTiposDocumento();
+  }, [idPersona, tipoAccion, dataPersona, reset]);
 
   const handleListarTiposDocumento = async () => {
     const respuesta = await listarTiposDocumento();
@@ -198,6 +171,7 @@ const PageGeneralPersona = () => {
 
         if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
           navigate(`/personas/editar/${tipo}/${res.data.idPersona}`);
+          onUpdatePersona(res.data);
           showSnackbar({
             open: true,
             mensaje: res.mensaje,
@@ -223,6 +197,7 @@ const PageGeneralPersona = () => {
         const res = await modificarPersona(data.idPersona, dataFinal);
 
         if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
+          onUpdatePersona(res.data);
           showSnackbar({
             open: true,
             mensaje: res.mensaje,
@@ -265,7 +240,7 @@ const PageGeneralPersona = () => {
   };
 
   return (
-    <Container>
+    <>
       {loading && (
         <Box
           sx={{
@@ -279,15 +254,6 @@ const PageGeneralPersona = () => {
           <LinearProgress />
         </Box>
       )}
-      <ToolbarDinamico
-        titulo={
-          tipo === "natural"
-            ? "Crear persona natural"
-            : "Crear persona jurídica"
-        }
-        rutaVolver="/personas"
-        ocultar={true}
-      />
 
       <Box
         component="form"
@@ -306,6 +272,29 @@ const PageGeneralPersona = () => {
               rowSpacing={2}
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
+              {/* Nombre */}
+              <Grid xs={12} sm={6} flex={"auto"}>
+                <Controller
+                  name="noPersona"
+                  control={control}
+                  rules={{ required: "Es requerido" }}
+                  render={({ field, fieldState }) => (
+                    <FormControl error={!!fieldState.error} fullWidth>
+                      <TextField
+                        {...field}
+                        label="Nombre completo"
+                        error={!!fieldState.error}
+                        disabled={modoLectura}
+                      />
+                      {fieldState.error && (
+                        <FormHelperText>
+                          {fieldState.error.message}
+                        </FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
               {/* Apellido Paterno */}
               <Grid xs={12} sm={6} flex={"auto"}>
                 <Controller
@@ -352,29 +341,6 @@ const PageGeneralPersona = () => {
                   )}
                 />
               </Grid>
-              {/* Nombre */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="noPersona"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Nombre completo"
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
             </Grid>
 
             <Grid
@@ -404,7 +370,7 @@ const PageGeneralPersona = () => {
                         disabled={
                           modoLectura ||
                           ((modo === "crear" || modo === "editar") &&
-                          tipo === "juridica")
+                            tipo === "juridica")
                         } // 🔹 Se bloquea si es jurídica
                       >
                         {tiposDocumento.map((tipo) => (
@@ -569,6 +535,7 @@ const PageGeneralPersona = () => {
                         label="Teléfono"
                         error={!!fieldState.error}
                         disabled={modoLectura}
+                        type="number"
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -592,6 +559,7 @@ const PageGeneralPersona = () => {
                         label="Teléfono adicional"
                         error={!!fieldState.error}
                         disabled={modoLectura}
+                        type="number"
                       />
                       {fieldState.error && (
                         <FormHelperText>
@@ -646,12 +614,12 @@ const PageGeneralPersona = () => {
                         onInputChange={(e, value) => buscarUbigeos(value)}
                         value={field.value}
                         onChange={(e, newValue) => field.onChange(newValue)}
+                        disabled={modoLectura}
                         renderInput={(params) => (
                           <TextField
                             {...params}
                             label="Ubigeo"
                             error={!!fieldState.error}
-                            disabled={modoLectura}
                           />
                         )}
                       />
@@ -869,21 +837,23 @@ const PageGeneralPersona = () => {
           </CardContent>
         </Card>
 
-        {!modoLectura && <Box mt={0}>
-          <Button
-            loadingPosition="start"
-            type="submit"
-            loading={loading}
-            disabled={loading}
-            variant="contained"
-            color="primary"
-            startIcon={<SaveIcon />}
-          >
-            Guardar
-          </Button>
-        </Box>}
+        {!modoLectura && (
+          <Box mt={0}>
+            <Button
+              loadingPosition="start"
+              type="submit"
+              loading={loading}
+              disabled={loading}
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+            >
+              Guardar
+            </Button>
+          </Box>
+        )}
       </Box>
-    </Container>
+    </>
   );
 };
 
