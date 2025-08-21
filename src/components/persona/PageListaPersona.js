@@ -6,13 +6,22 @@ import {
   Box,
   Container,
   Fab,
+  FormControl,
+  InputLabel,
   LinearProgress,
+  MenuItem,
+  Pagination,
+  Select,
   Tooltip,
+  Typography,
 } from "@mui/material";
-import { eliminarPersona, listarPersona } from "../../services/PersonaServices";
+import {
+  eliminarPersona,
+  listarPersona,
+  paginarPersona,
+} from "../../services/PersonaServices";
 import ToolbarDinamico from "../../utils/ToolbarDinamico";
 import TarjetaPersona from "./TarjetaPersona";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useNavigate } from "react-router-dom";
 import TipoAccion from "../../utils/TipoAccion";
 import DialogoPersona from "./DialogoPersona";
@@ -25,10 +34,15 @@ const PageListaPersona = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    handleListarPersona();
-  }, []);
+    // handleListarPersona();
+    handlePaginarPersona(page, limit);
+  }, [page, limit]);
 
   /**
    * La función `handleListarPersona` es una función asincrónica que obtiene una lista de personas,
@@ -54,6 +68,33 @@ const PageListaPersona = () => {
       } else {
         setUsuarios(data.data);
       }
+      setLoading(false);
+    } catch (e) {
+      showSnackbar({
+        open: true,
+        mensaje: e.message,
+        severity: TipoResultado.ERROR.toString().toLowerCase(),
+      });
+    }
+  };
+
+  const handlePaginarPersona = async (page, limit) => {
+    try {
+      setLoading(true);
+      const data = await paginarPersona(page, limit);
+
+      if (data.tipoResultado === TipoResultado.ERROR.toString()) {
+        showSnackbar({
+          open: true,
+          mensaje: data.mensaje,
+          severity: TipoResultado.ERROR.toString().toLowerCase(),
+        });
+      } else {
+        setUsuarios(data.data.data); // registros
+        setTotal(data.data.total); // total registros
+        setTotalPages(data.data.totalPages); // total páginas
+      }
+
       setLoading(false);
     } catch (e) {
       showSnackbar({
@@ -122,7 +163,8 @@ const PageListaPersona = () => {
    * cualquier otro valor de `idTipoDocIdentidad`.
    */
   const getTipoPersona = (idTipoDocIdentidad) => {
-    if (idTipoDocIdentidad === Constantes.TIPOS_DOCUMENTO.RUC) return "juridica";
+    if (idTipoDocIdentidad === Constantes.TIPOS_DOCUMENTO.RUC)
+      return "juridica";
     return "natural";
   };
 
@@ -159,18 +201,20 @@ const PageListaPersona = () => {
         ocultar={false}
       />
 
-
       <Tooltip title="Agregar Persona" placement="top">
         <Fab
           color="primary"
           sx={{ mb: 2 }}
           onClick={() => setOpenDialog(true)}
           variant="contained"
-          startIcon={<AddCircleOutlineIcon />}
         >
           <AddIcon />
         </Fab>
       </Tooltip>
+
+      <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+        Total de registros: {total}
+      </Typography>
 
       {/* Tarjeta de listas de personas */}
       <TarjetaPersona
@@ -179,6 +223,38 @@ const PageListaPersona = () => {
         onEdit={handleNavgEditarPersona}
         onConsulta={handleNavgConsultarPersona}
       />
+
+      {/* 📌 Paginación y cantidad de registros */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mt={3}
+      >
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          color="primary"
+        />
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel id="limit-label">Registros</InputLabel>
+          <Select
+            labelId="limit-label"
+            value={limit}
+            label="Registros"
+            onChange={(e) => {
+              setLimit(e.target.value);
+              setPage(1); // 👈 cuando cambias el tamaño, vuelve a la página 1
+            }}
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={15}>15</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={30}>30</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
       {/* Dialogo de creación de personas */}
       <DialogoPersona

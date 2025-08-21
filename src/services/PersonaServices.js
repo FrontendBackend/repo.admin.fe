@@ -5,6 +5,13 @@ export const listarPersona = async () => {
   return res.data;
 };
 
+export const paginarPersona = async (page = 1, limit = 10) => {
+  const res = await api.get(
+    `/personas/paginarPersona?page=${page}&limit=${limit}`
+  );
+  return res.data;
+};
+
 export const obtenerPersonaPorId = async (idPersona) => {
   const res = await api.get(`/personas/obtenerPersonaPorId/${idPersona}`);
   return res.data;

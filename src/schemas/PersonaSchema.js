@@ -49,7 +49,6 @@ export const personaSchema = (tipo) => {
             .matches(/^[0-9]+$/, "Solo se permiten números")
             .max(20, "El CE puede tener hasta 20 dígitos"),
       }),
-      
 
     idTipoDocIdentidad: yup.string().when([], {
       is: () => tipo === "natural" || tipo === "juridica",
@@ -63,7 +62,7 @@ export const personaSchema = (tipo) => {
     }),
     noPrefijoPersona: yup.string().when([], {
       is: () => tipo === "natural",
-      then: (s) => s.required("Es requerido"),
+      then: (s) => s.notRequired("Es requerido"),
       otherwise: (s) => s.notRequired(),
     }),
     deCorreo: yup.string().when([], {
@@ -105,11 +104,6 @@ export const personaSchema = (tipo) => {
         then: (s) => s.required("Es requerido"),
         otherwise: (s) => s.notRequired(),
       }),
-    // idUbigeo: yup.string().when([], {
-    //   is: () => tipo === "natural" || tipo === "juridica",
-    //   then: (s) => s.required("Es requerido"),
-    //   otherwise: (s) => s.notRequired(),
-    // }),
     tiSexo: yup.string().when([], {
       is: () => tipo === "natural",
       then: (s) => s.required("Es requerido"),
@@ -137,7 +131,7 @@ export const personaSchema = (tipo) => {
     }),
     cmNota: yup.string().when([], {
       is: () => tipo === "natural" || tipo === "juridica",
-      then: (s) => s.required("Es requerido"),
+      then: (s) => s.notRequired("Es requerido"),
       otherwise: (s) => s.notRequired(), // si es "juridica" no es obligatorio
     }),
   });

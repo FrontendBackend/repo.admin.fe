@@ -446,7 +446,6 @@ const PageGeneralPersona = ({
                   </LocalizationProvider>
                 </Grid>
               )}
-
               {/* Nombre prefijo persona*/}
               {tipo === "natural" && (
                 <Grid xs={12} sm={6} flex={"auto"}>

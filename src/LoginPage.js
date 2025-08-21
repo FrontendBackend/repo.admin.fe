@@ -21,7 +21,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
     setError("");
 
     // Dummy authentication logic
-    if (email === "admin@example.com" && password === "password") {
+    if (email === "admin" && password === "admin") {
       const authToken = "12345";
       localStorage.setItem("authToken", authToken);
       setIsAuthenticated(true); // ✅ Actualiza el estado global
