@@ -31,18 +31,20 @@ import dayjs from "dayjs";
 import Constantes from "../../utils/Constantes";
 import TipoAccion from "../../utils/TipoAccion";
 import { personaDefaultValues } from "../../utils/FormDefaults";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { personaSchema } from "../../schemas/PersonaSchema";
 
 const PageGeneralPersona = ({
   tipoAccion,
   tipo,
   idPersona,
   dataPersona = {},
-  onUpdatePersona,
+  onUpdatePersona
 }) => {
-  const modoLectura =
-    tipoAccion === TipoAccion.CONSULTAR.toString() ? true : false;
+  const modoLectura = tipoAccion === TipoAccion.CONSULTAR.toString() ? true : false;
   const modo = idPersona ? "editar" : "crear"; // Si id existe => edición, si no => creación
   const { handleSubmit, control, reset, watch } = useForm({
+    resolver: yupResolver(personaSchema(tipo)),
     defaultValues: {
       ...personaDefaultValues,
       idTipoDocIdentidad:
@@ -58,7 +60,7 @@ const PageGeneralPersona = ({
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const tipoPersona = watch("idTipoDocIdentidad"); // natural o juridica
-
+// console.log("tipo en form", tipo);
   useEffect(() => {
     if (
       (tipoAccion === TipoAccion.EDITAR.toString() ||
@@ -70,7 +72,7 @@ const PageGeneralPersona = ({
         idUbigeo: dataPersona?.idUbigeo,
         descNombreUbigeo: dataPersona?.descNombreUbigeo,
       };
-      reset({ ...dataPersona, idUbigeo: ubigeoObj }, { keepDirtyValues: true });
+      reset({ ...dataPersona, idUbigeo: ubigeoObj });
     } else if (tipoAccion === TipoAccion.CREAR.toString()) {
       // limpiar el form
       reset({
@@ -164,14 +166,13 @@ const PageGeneralPersona = ({
           : null,
         cmNota: data.cmNota.replace(/\n/g, "<br>"),
       };
-      console.log(dataFinal);
 
       if (modo === "crear") {
         const res = await crearPersona(dataFinal);
 
         if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
+          onUpdatePersona(res.data); 
           navigate(`/personas/editar/${tipo}/${res.data.idPersona}`);
-          onUpdatePersona(res.data);
           showSnackbar({
             open: true,
             mensaje: res.mensaje,
@@ -273,74 +274,79 @@ const PageGeneralPersona = ({
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
               {/* Nombre */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="noPersona"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Nombre completo"
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="noPersona"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Nombre completo"
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+
               {/* Apellido Paterno */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="apPaterno"
-                  rules={{ required: "Es requerido" }}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Apellido Paterno"
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="apPaterno"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Apellido Paterno"
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+
               {/* Apellido Materno */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="apMaterno"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Apellido Materno"
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="apMaterno"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Apellido Materno"
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
             </Grid>
 
             <Grid
@@ -354,7 +360,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="idTipoDocIdentidad"
                   control={control}
-                  rules={{ required: "El tipo de documento es obligatorio" }}
                   render={({ field, fieldState }) => (
                     <FormControl
                       error={!!fieldState.error}
@@ -396,7 +401,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="coDocumentoIdentidad"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -415,56 +419,59 @@ const PageGeneralPersona = ({
                 />
               </Grid>
               {/* Fecha Nacimiento */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <Controller
+                      name="feNacimiento"
+                      control={control}
+                      defaultValue={null}
+                      render={({ field, fieldState }) => (
+                        <DatePicker
+                          label="Fecha de Nacimiento"
+                          format="DD/MM/YYYY"
+                          value={field.value ? dayjs(field.value) : null}
+                          onChange={(value) => field.onChange(value)}
+                          disabled={modoLectura}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              error: !!fieldState.error,
+                              helperText: fieldState.error?.message,
+                            },
+                          }}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              )}
+
+              {/* Nombre prefijo persona*/}
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
                   <Controller
-                    name="feNacimiento"
+                    name="noPrefijoPersona"
                     control={control}
-                    defaultValue={null}
-                    rules={{ required: "Fecha de nacimiento es obligatoria" }}
                     render={({ field, fieldState }) => (
-                      <DatePicker
-                        label="Fecha de Nacimiento"
-                        format="DD/MM/YYYY"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(value) => field.onChange(value)}
-                        disabled={modoLectura}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            error: !!fieldState.error,
-                            helperText: fieldState.error?.message,
-                          },
-                        }}
-                      />
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Nombre prefiijo persona"
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                          fullWidth
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
                     )}
                   />
-                </LocalizationProvider>
-              </Grid>
-              {/* Nombre prefijo persona*/}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="noPrefijoPersona"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Nombre prefiijo persona"
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                        fullWidth
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+                </Grid>
+              )}
             </Grid>
 
             <Grid
@@ -479,7 +486,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="deCorreo"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -503,7 +509,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="deCorreo2"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -527,7 +532,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="deTelefono"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -551,7 +555,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="deTelefono2"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -575,7 +578,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="diPersona"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField
@@ -599,7 +601,6 @@ const PageGeneralPersona = ({
                 <Controller
                   name="idUbigeo"
                   control={control}
-                  rules={{ required: "Ubigeo es obligatorio" }}
                   render={({ field, fieldState }) => (
                     <FormControl
                       error={!!fieldState.error}
@@ -607,12 +608,12 @@ const PageGeneralPersona = ({
                       fullWidth
                     >
                       <Autocomplete
-                        options={ubigeoOptions}
+                        options={ubigeoOptions }
                         getOptionLabel={getUbigeoLabel}
                         filterOptions={(options) => options}
                         loading={loadingUbigeo}
                         onInputChange={(e, value) => buscarUbigeos(value)}
-                        value={field.value}
+                        value={field.value ?? ""}
                         onChange={(e, newValue) => field.onChange(newValue)}
                         disabled={modoLectura}
                         renderInput={(params) => (
@@ -633,38 +634,39 @@ const PageGeneralPersona = ({
                 />
               </Grid>
               {/* Sexo */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="tiSexo"
-                  control={control}
-                  rules={{ required: "El género es obligatorio" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      error={!!fieldState.error}
-                      sx={{ m: 0, minWidth: 120 }}
-                      fullWidth
-                    >
-                      <InputLabel>Género</InputLabel>
-                      <Select
-                        label="Género"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        disabled={modoLectura}
+              {tipo === "natural" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="tiSexo"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl
+                        error={!!fieldState.error}
+                        sx={{ m: 0, minWidth: 120 }}
+                        fullWidth
                       >
-                        <MenuItem value="">Seleccione su género</MenuItem>
-                        <MenuItem value="M">Masculino</MenuItem>
-                        <MenuItem value="F">Femenino</MenuItem>
-                      </Select>
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+                        <InputLabel>Género</InputLabel>
+                        <Select
+                          label="Género"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          disabled={modoLectura}
+                        >
+                          <MenuItem value="">Seleccione su género</MenuItem>
+                          <MenuItem value="M">Masculino</MenuItem>
+                          <MenuItem value="F">Femenino</MenuItem>
+                        </Select>
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
             </Grid>
           </CardContent>
         </Card>
@@ -680,87 +682,92 @@ const PageGeneralPersona = ({
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
               {/* Razón social*/}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="noRazonSocial"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Razón social"
-                        inputProps={{ maxLength: 100 }}
-                        error={!!fieldState.error}
-                        disabled={modoLectura}
-                        fullWidth
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+              {tipo === "juridica" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="noRazonSocial"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Razón social"
+                          inputProps={{ maxLength: 100 }}
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                          fullWidth
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+
               {/* ¿Es consorcio?*/}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="flConsorcio"
-                  control={control}
-                  rules={{ required: "El consorcio es obligatorio" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      error={!!fieldState.error}
-                      sx={{ m: 0, minWidth: 120 }}
-                      fullWidth
-                    >
-                      <InputLabel>¿Es consorcio?</InputLabel>
-                      <Select
-                        label="¿Es consorcio?"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        disabled={modoLectura}
-                      >
-                        <MenuItem value="">Seleccione</MenuItem>
-                        <MenuItem value="1">Sí</MenuItem>
-                        <MenuItem value="0">No</MenuItem>
-                      </Select>
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
-              {/* Nombre corto */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="noCorto"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl error={!!fieldState.error} fullWidth>
-                      <TextField
-                        {...field}
-                        label="Nombre corto"
+              {tipo === "juridica" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="flConsorcio"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl
                         error={!!fieldState.error}
-                        disabled={modoLectura}
+                        sx={{ m: 0, minWidth: 120 }}
                         fullWidth
-                      />
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+                      >
+                        <InputLabel>¿Es consorcio?</InputLabel>
+                        <Select
+                          label="¿Es consorcio?"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          disabled={modoLectura}
+                        >
+                          <MenuItem value="">Seleccione</MenuItem>
+                          <MenuItem value="1">Sí</MenuItem>
+                          <MenuItem value="0">No</MenuItem>
+                        </Select>
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+
+              {/* Nombre corto */}
+              {tipo === "juridica" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="noCorto"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl error={!!fieldState.error} fullWidth>
+                        <TextField
+                          {...field}
+                          label="Nombre corto"
+                          error={!!fieldState.error}
+                          disabled={modoLectura}
+                          fullWidth
+                        />
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
             </Grid>
 
             <Grid
@@ -770,44 +777,45 @@ const PageGeneralPersona = ({
               columnSpacing={{ xs: 1, sm: 2, md: 3 }}
             >
               {/* Restricción */}
-              <Grid xs={12} sm={6} flex={"auto"}>
-                <Controller
-                  name="deRestriccion"
-                  control={control}
-                  rules={{ required: "Es requerido" }}
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      error={!!fieldState.error}
-                      sx={{ m: 0, minWidth: 120 }}
-                      fullWidth
-                    >
-                      <InputLabel>Restricción</InputLabel>
-                      <Select
-                        label="Restricción"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        disabled={modoLectura}
+              {tipo === "juridica" && (
+                <Grid xs={12} sm={6} flex={"auto"}>
+                  <Controller
+                    name="deRestriccion"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl
+                        error={!!fieldState.error}
+                        sx={{ m: 0, minWidth: 120 }}
+                        fullWidth
                       >
-                        <MenuItem value="">Seleccione</MenuItem>
-                        <MenuItem value="1">Sí</MenuItem>
-                        <MenuItem value="0">No</MenuItem>
-                      </Select>
-                      {fieldState.error && (
-                        <FormHelperText>
-                          {fieldState.error.message}
-                        </FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+                        <InputLabel>Restricción</InputLabel>
+                        <Select
+                          label="Restricción"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          disabled={modoLectura}
+                        >
+                          <MenuItem value="">Seleccione</MenuItem>
+                          <MenuItem value="1">Sí</MenuItem>
+                          <MenuItem value="0">No</MenuItem>
+                        </Select>
+                        {fieldState.error && (
+                          <FormHelperText>
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+
               {/* Comentario nota */}
               <Grid xs={12} sm={6} flex={"auto"}>
                 <Controller
                   name="cmNota"
                   control={control}
-                  rules={{ required: "Es requerido" }}
                   render={({ field, fieldState }) => (
                     <FormControl error={!!fieldState.error} fullWidth>
                       <TextField

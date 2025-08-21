@@ -13,13 +13,35 @@ import PersonIcon from "@mui/icons-material/Person";
 import { obtenerPersonaPorId } from "../../services/PersonaServices";
 import TipoResultado from "../../utils/TipoResultado";
 import { useSnackbar } from "../../context/SnackbarContext";
+import TipoAccion from "../../utils/TipoAccion";
 
 function PageFormulario() {
-  const [value, setValue] = React.useState("0");
-  const { tipoAccion, tipo, idPersona = null } = useParams(); // 'natural' o 'juridica'
+  const [value, setValue] = useState("0");
+
+  // ⚡ renombramos para no colisionar
+  const { tipoAccion: tipoAccionParam, tipo, idPersona = null } = useParams();
   const { showSnackbar } = useSnackbar();
+
   const [dataPersona, setPersona] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // ⚡ estado controlado para tipoAccion
+  const [tipoAccion, setTipoAccion] = useState(
+    tipoAccionParam ?? TipoAccion.CREAR.toString()
+  );
+
+  const titulo =
+    tipo === "natural"
+      ? tipoAccion === TipoAccion.CREAR.toString()
+        ? "Crear persona natural"
+        : tipoAccion === TipoAccion.EDITAR.toString()
+        ? "Editar persona natural"
+        : "Consultar persona natural"
+      : tipoAccion === TipoAccion.CREAR.toString()
+      ? "Crear persona jurídica"
+      : tipoAccion === TipoAccion.EDITAR.toString()
+      ? "Editar persona jurídica"
+      : "Consultar persona jurídica";
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -29,13 +51,23 @@ function PageFormulario() {
     handleObtenerPersonaPorId(idPersona);
   }, [idPersona]);
 
+  const onUpdatePersona = (persona) => {
+    setPersona(persona);
+    console.log("sincroniza:", persona);
+    
+    // 👇 importante: si estabas en CREAR, ahora cambias a EDITAR
+    if (tipoAccion === TipoAccion.CREAR.toString()) {
+      setTipoAccion(TipoAccion.EDITAR.toString());
+    }
+  };
+
   const handleObtenerPersonaPorId = async (idPersona) => {
     console.log(idPersona);
     setLoading(true);
     if (idPersona) {
       const res = await obtenerPersonaPorId(idPersona);
       if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
-        console.log("esperando respuesta: ", res);
+        // console.log("esperando respuesta: ", res);
         setPersona(res.data);
         setLoading(false);
       } else if (res.tipoResultado === TipoResultado.WARNING.toString()) {
@@ -74,11 +106,7 @@ function PageFormulario() {
       )}
       <Box sx={{ width: "100%", typography: "body1" }}>
         <ToolbarDinamico
-          titulo={
-            tipo === "natural"
-              ? "Crear persona natural"
-              : "Crear persona jurídica"
-          }
+          titulo={titulo}
           rutaVolver="/personas"
           ocultar={true}
         />
@@ -86,8 +114,12 @@ function PageFormulario() {
           <Box sx={{ mt: -1, mb: 1, borderBottom: 1, borderColor: "divider" }}>
             <TabList onChange={handleChange} centered>
               <Tab icon={<PersonIcon />} label="General" value="0" />
-              <Tab icon={<BusinessIcon />} label="Empresas" value="1" />
-              <Tab icon={<SchemaIcon />} label="Proyectos" value="2" />
+              {tipoAccion !== "1" && (
+                <Tab icon={<BusinessIcon />} label="Empresas" value="1" />
+              )}
+              {tipoAccion !== "1" && (
+                <Tab icon={<SchemaIcon />} label="Proyectos" value="2" />
+              )}
             </TabList>
           </Box>
           <TabPanel value="0" sx={{ padding: 0 }}>
@@ -96,7 +128,7 @@ function PageFormulario() {
               idPersona={idPersona}
               tipo={tipo}
               dataPersona={dataPersona}
-              onUpdatePersona={(nuevaPersona) => setPersona(nuevaPersona)} // ✅ sincroniza
+              onUpdatePersona={onUpdatePersona} // ✅ sincroniza con el padre
             />
           </TabPanel>
           <TabPanel value="1">Item Empresa</TabPanel>

@@ -14,7 +14,7 @@ export const personaDefaultValues = {
   feNacimiento: "",
   flConsorcio: "",
   idTipoDocIdentidad: "", // lo ajustamos en el componente
-  idUbigeo: "",
+  idUbigeo: null,
   noCorto: "",
   noPersona: "",
   noPrefijoPersona: "",
