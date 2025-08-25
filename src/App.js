@@ -6,8 +6,8 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import LoginPage from "./LoginPage";
-import ProtectedRoutes from "./ProtectedRoutes";
+import LoginPage from "./components/login/LoginPage";
+import ProtectedRoutes from "./routes/ProtectedRoutes";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(

@@ -4,20 +4,20 @@ import { useSnackbar } from "../../context/SnackbarContext";
 import TipoResultado from "../../utils/TipoResultado";
 import {
   Box,
+  Button,
+  Card,
+  CardContent,
   Container,
+  Drawer,
   Fab,
-  FormControl,
-  InputLabel,
   LinearProgress,
-  MenuItem,
-  Pagination,
-  Select,
+  Stack,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
 import {
   eliminarPersona,
-  listarPersona,
   paginarPersona,
 } from "../../services/PersonaServices";
 import ToolbarDinamico from "../../utils/ToolbarDinamico";
@@ -27,15 +27,23 @@ import TipoAccion from "../../utils/TipoAccion";
 import DialogoPersona from "./DialogoPersona";
 import Constantes from "../../utils/Constantes";
 import AddIcon from "@mui/icons-material/Add";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import Paginacion from "../../utils/Paginacion";
 
 const PageListaPersona = () => {
+  const [openFilter, setOpenFilter] = useState(false);
+
+  const [filters, setFilters] = useState({
+    nombre: "",
+    tipo: "",
+  });
   const { showSnackbar } = useSnackbar();
-  const [personas, setUsuarios] = useState([]);
+  const [personas, setPersonas] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -48,36 +56,46 @@ const PageListaPersona = () => {
    * La función `handleListarPersona` es una función asincrónica que obtiene una lista de personas,
    * gestiona diferentes tipos de resultados y muestra un mensaje de snackbar según corresponda.
    */
-  const handleListarPersona = async () => {
-    try {
-      setLoading(true);
-      const data = await listarPersona();
-      if (data.tipoResultado === TipoResultado.ERROR.toString()) {
-        showSnackbar({
-          open: true,
-          mensaje: data.mensaje,
-          severity: TipoResultado.ERROR.toString().toLowerCase(),
-        });
-      } else if (data.tipoResultado === TipoResultado.WARNING.toString()) {
-        setUsuarios(data.data);
-        showSnackbar({
-          open: true,
-          mensaje: data.mensaje,
-          severity: TipoResultado.WARNING.toString().toLowerCase(),
-        });
-      } else {
-        setUsuarios(data.data);
-      }
-      setLoading(false);
-    } catch (e) {
-      showSnackbar({
-        open: true,
-        mensaje: e.message,
-        severity: TipoResultado.ERROR.toString().toLowerCase(),
-      });
-    }
-  };
+  // const handleListarPersona = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const data = await listarPersona();
+  //     if (data.tipoResultado === TipoResultado.ERROR.toString()) {
+  //       showSnackbar({
+  //         open: true,
+  //         mensaje: data.mensaje,
+  //         severity: TipoResultado.ERROR.toString().toLowerCase(),
+  //       });
+  //     } else if (data.tipoResultado === TipoResultado.WARNING.toString()) {
+  //       setPersonas(data.data);
+  //       showSnackbar({
+  //         open: true,
+  //         mensaje: data.mensaje,
+  //         severity: TipoResultado.WARNING.toString().toLowerCase(),
+  //       });
+  //     } else {
+  //       setPersonas(data.data);
+  //     }
+  //     setLoading(false);
+  //   } catch (e) {
+  //     showSnackbar({
+  //       open: true,
+  //       mensaje: e.message,
+  //       severity: TipoResultado.ERROR.toString().toLowerCase(),
+  //     });
+  //   }
+  // };
 
+  /**
+   * La función `handlePaginarPersona` se utiliza para gestionar la paginación de una lista de personas,
+   * mostrando mensajes de error si es necesario.
+   * @param page - El parámetro `page` de la función `handlePaginarPersona` representa el número de página
+   * del que se desean recuperar los datos. Se utiliza para especificar la página de datos que se desea
+   * obtener de los resultados paginados.
+   * @param limit - El parámetro `limit` de la función `handlePaginarPersona` representa el número
+   * de elementos que se desean mostrar por página al paginar una lista de personas. Determina cuántos registros
+   * se obtendrán y mostrarán en cada página de los resultados paginados.
+   */
   const handlePaginarPersona = async (page, limit) => {
     try {
       setLoading(true);
@@ -90,7 +108,7 @@ const PageListaPersona = () => {
           severity: TipoResultado.ERROR.toString().toLowerCase(),
         });
       } else {
-        setUsuarios(data.data.data); // registros
+        setPersonas(data.data.data); // registros
         setTotal(data.data.total); // total registros
         setTotalPages(data.data.totalPages); // total páginas
       }
@@ -144,7 +162,7 @@ const PageListaPersona = () => {
           severity: TipoResultado.ERROR.toString().toLowerCase(),
         });
       }
-      handleListarPersona();
+      handlePaginarPersona(page, limit);
     } catch (e) {
       showSnackbar({
         open: true,
@@ -181,6 +199,12 @@ const PageListaPersona = () => {
     );
   };
 
+  /**
+   * La función `handleNavgConsultarPersona` navega a una URL específica según el tipo de persona
+   * y su ID.
+   * @param persona - El parámetro `persona` parece ser un objeto que representa a una persona con las
+   * siguientes propiedades:
+   */
   const handleNavgConsultarPersona = async (persona) => {
     const tipoPersona = getTipoPersona(persona.idTipoDocIdentidad);
     navigate(
@@ -188,8 +212,15 @@ const PageListaPersona = () => {
     );
   };
 
+  const handleApplyFilters = () => {
+    console.log("🔎 Filtros aplicados:", filters);
+    // 👇 aquí llamas tu API con filtros + paginación
+    // getPersonas({ page, limit, ...filters })
+    setOpenFilter(false);
+  };
+
   return (
-    <Container>
+    <Container maxWidth="xl" sx={{ mt: 0 }}>
       <Box
         sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 9999 }}
       >
@@ -201,16 +232,35 @@ const PageListaPersona = () => {
         ocultar={false}
       />
 
-      <Tooltip title="Agregar Persona" placement="top">
-        <Fab
-          color="primary"
-          sx={{ mb: 2 }}
-          onClick={() => setOpenDialog(true)}
-          variant="contained"
-        >
-          <AddIcon />
-        </Fab>
-      </Tooltip>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        gap={2} // 👈 separación entre elementos cuando están en columna
+      >
+        <Tooltip title="Agregar Persona" placement="top">
+          <Fab
+            color="primary"
+            sx={{ mb: 2 }}
+            onClick={() => setOpenDialog(true)}
+            variant="contained"
+          >
+            <AddIcon />
+          </Fab>
+        </Tooltip>
+
+        {/* Botón filtros */}
+        <Tooltip title="Filtros avanzados" placement="top">
+          <Fab
+            color="secondary"
+            sx={{ mb: 2 }}
+            onClick={() => setOpenFilter(true)}
+            variant="contained"
+          >
+            <FilterListIcon />
+          </Fab>
+        </Tooltip>
+      </Box>
 
       <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
         Total de registros: {total}
@@ -225,36 +275,13 @@ const PageListaPersona = () => {
       />
 
       {/* 📌 Paginación y cantidad de registros */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mt={3}
-      >
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(e, value) => setPage(value)}
-          color="primary"
-        />
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel id="limit-label">Registros</InputLabel>
-          <Select
-            labelId="limit-label"
-            value={limit}
-            label="Registros"
-            onChange={(e) => {
-              setLimit(e.target.value);
-              setPage(1); // 👈 cuando cambias el tamaño, vuelve a la página 1
-            }}
-          >
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={15}>15</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      <Paginacion
+        limit={limit}
+        page={page}
+        setLimit={setLimit}
+        setPage={setPage}
+        totalPages={totalPages}
+      />
 
       {/* Dialogo de creación de personas */}
       <DialogoPersona
@@ -262,6 +289,53 @@ const PageListaPersona = () => {
         setOpenDialog={setOpenDialog}
         openDialog={openDialog}
       ></DialogoPersona>
+
+      {/* 🔹 Drawer de filtros avanzados */}
+      <Drawer
+        anchor="right"
+        open={openFilter}
+        onClose={() => setOpenFilter(false)}
+      >
+        <Card sx={{ width: 300, height: "100%", mt: 6 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Filtros Avanzados
+            </Typography>
+
+            <Stack spacing={2}>
+              <TextField
+                label="Nombre"
+                value={filters.nombre}
+                onChange={(e) =>
+                  setFilters({ ...filters, nombre: e.target.value })
+                }
+              />
+              <TextField
+                label="Tipo"
+                value={filters.tipo}
+                onChange={(e) =>
+                  setFilters({ ...filters, tipo: e.target.value })
+                }
+              />
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleApplyFilters}
+              >
+                Aplicar
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setFilters({ nombre: "", tipo: "" })}
+              >
+                Limpiar
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Drawer>
     </Container>
   );
 };

@@ -1,7 +1,7 @@
 // src/AdminDashboard.js
 import { Container, Paper, Typography, Grid, Box } from "@mui/material";
-import UserChart from "./components/UserChart";
-import SignupChart from "./components/SignupChart";
+import UserChart from "../UserChart";
+import SignupChart from "../SignupChart";
 
 const AdminDashboard = () => {
   console.log("🟢 AdminDashboard montado");

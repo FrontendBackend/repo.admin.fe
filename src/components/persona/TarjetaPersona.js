@@ -81,8 +81,19 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     }
                   />
                 }
+                
                 title={persona.noPersona}
-                subheader={persona.deCorreo}
+                subheader={
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {persona.deCorreo}
+                  </Typography>
+                }
               />
               <CardContent>
                 <Typography

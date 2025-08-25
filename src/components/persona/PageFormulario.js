@@ -90,7 +90,7 @@ function PageFormulario() {
   };
 
   return (
-    <Container>
+    <Container maxWidth="xl" sx={{ mt: 0 }}>
       {loading && (
         <Box
           sx={{
