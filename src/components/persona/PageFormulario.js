@@ -114,10 +114,10 @@ function PageFormulario() {
           <Box sx={{ mt: -1, mb: 1, borderBottom: 1, borderColor: "divider" }}>
             <TabList onChange={handleChange} centered>
               <Tab icon={<PersonIcon />} label="General" value="0" />
-              {tipoAccion !== "1" && (
+              {tipoAccion !== TipoAccion.CREAR.toString() && (
                 <Tab icon={<BusinessIcon />} label="Empresas" value="1" />
               )}
-              {tipoAccion !== "1" && (
+              {tipoAccion !== TipoAccion.CREAR.toString() && (
                 <Tab icon={<SchemaIcon />} label="Proyectos" value="2" />
               )}
             </TabList>

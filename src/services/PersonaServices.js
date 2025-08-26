@@ -1,15 +1,39 @@
 import api from "../config/axiosConfig";
+import { Paginador } from "../utils/Paginador";
 
 export const listarPersona = async () => {
   const res = await api.get("/personas/listarPersona");
   return res.data;
 };
 
-export const paginarPersona = async (page = 1, limit = 10) => {
-  const res = await api.get(
-    `/personas/paginarPersona?page=${page}&limit=${limit}`
+// export const paginarPersona = async (page = 1, limit = 10) => {
+//   const res = await api.get(
+//     `/personas/paginarPersona?page=${page}&limit=${limit}`
+//   );
+//   return res.data;
+// };
+// export const paginarPersona = async (page = 1, limit = 10, filtros = {}) => {
+//   const res = await api.post(`/personas/paginarPersona`, {
+//     page,
+//     limit,
+//     ...filtros, // 👈 puedes enviar nombre, tipo, etc.
+//   });
+//   return res.data;
+// };
+
+export const paginarPersona = async (filtro, paginador = new Paginador()) => {
+  const res = await api.post(
+    "/personas/paginarPersona",
+    filtro, // body
+    {
+      params: {
+        page: paginador.page,
+        limit: paginador.limit,
+        sort: paginador.sort,
+      },
+    }
   );
-  return res.data;
+  return res.data; // este sería tu PageResponse
 };
 
 export const obtenerPersonaPorId = async (idPersona) => {

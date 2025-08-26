@@ -20,4 +20,11 @@ export const personaDefaultValues = {
   noPrefijoPersona: "",
   noRazonSocial: "",
   tiSexo: "",
+
+  // algunos propiedades auxiliares para filtros
+  nombreCompleto: "",
+
+  // propiedades de la paginación
+  page: 1,
+  limit: 10,
 };
