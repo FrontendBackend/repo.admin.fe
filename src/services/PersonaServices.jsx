@@ -6,21 +6,6 @@ export const listarPersona = async () => {
   return res.data;
 };
 
-// export const paginarPersona = async (page = 1, limit = 10) => {
-//   const res = await api.get(
-//     `/personas/paginarPersona?page=${page}&limit=${limit}`
-//   );
-//   return res.data;
-// };
-// export const paginarPersona = async (page = 1, limit = 10, filtros = {}) => {
-//   const res = await api.post(`/personas/paginarPersona`, {
-//     page,
-//     limit,
-//     ...filtros, // 👈 puedes enviar nombre, tipo, etc.
-//   });
-//   return res.data;
-// };
-
 export const paginarPersona = async (filtro, paginador = new Paginador()) => {
   const res = await api.post(
     "/personas/paginarPersona",

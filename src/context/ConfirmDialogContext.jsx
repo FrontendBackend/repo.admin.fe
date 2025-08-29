@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // src/context/ConfirmDialogContext.js
 import { createContext, useContext, useState } from "react";
 import ConfirmDialog from "../utils/ConfirmDialog";

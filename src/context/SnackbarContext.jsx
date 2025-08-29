@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // src/context/SnackbarContext.js
 import React, { createContext, useContext, useState, useCallback } from "react";
 import SnackbarAlerta from "../utils/SnackbarAlerta";

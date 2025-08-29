@@ -39,9 +39,10 @@ const PageGeneralPersona = ({
   tipo,
   idPersona,
   dataPersona = {},
-  onUpdatePersona
+  onUpdatePersona,
 }) => {
-  const modoLectura = tipoAccion === TipoAccion.CONSULTAR.toString() ? true : false;
+  const modoLectura =
+    tipoAccion === TipoAccion.CONSULTAR.toString() ? true : false;
   const modo = idPersona ? "editar" : "crear"; // Si id existe => edición, si no => creación
   const { handleSubmit, control, reset, watch } = useForm({
     resolver: yupResolver(personaSchema(tipo)),
@@ -60,7 +61,7 @@ const PageGeneralPersona = ({
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const tipoPersona = watch("idTipoDocIdentidad"); // natural o juridica
-// console.log("tipo en form", tipo);
+  // console.log("tipo en form", tipo);
   useEffect(() => {
     if (
       (tipoAccion === TipoAccion.EDITAR.toString() ||
@@ -161,9 +162,6 @@ const PageGeneralPersona = ({
       const dataFinal = {
         ...data,
         idUbigeo: data.idUbigeo ? data.idUbigeo.idUbigeo : null,
-        feNacimiento: data.feNacimiento
-          ? dayjs(data.feNacimiento).format("DD-MM-YYYY")
-          : null,
         cmNota: data.cmNota.replace(/\n/g, "<br>"),
       };
 
@@ -171,7 +169,7 @@ const PageGeneralPersona = ({
         const res = await crearPersona(dataFinal);
 
         if (res.tipoResultado === TipoResultado.SUCCESS.toString()) {
-          onUpdatePersona(res.data); 
+          onUpdatePersona(res.data);
           navigate(`/personas/editar/${tipo}/${res.data.idPersona}`);
           showSnackbar({
             open: true,
@@ -430,8 +428,17 @@ const PageGeneralPersona = ({
                         <DatePicker
                           label="Fecha de Nacimiento"
                           format="DD/MM/YYYY"
-                          value={field.value ? dayjs(field.value) : null}
-                          onChange={(value) => field.onChange(value)}
+                          value={
+                            field.value
+                              ? dayjs(field.value, "DD/MM/YYYY")
+                              : null
+                          }
+                          onChange={
+                            (value) =>
+                              field.onChange(
+                                value ? value.format("DD/MM/YYYY") : null
+                              ) // 👈 guarda dd/MM/yyyy
+                          }
                           disabled={modoLectura}
                           slotProps={{
                             textField: {
@@ -607,7 +614,7 @@ const PageGeneralPersona = ({
                       fullWidth
                     >
                       <Autocomplete
-                        options={ubigeoOptions }
+                        options={ubigeoOptions}
                         getOptionLabel={getUbigeoLabel}
                         filterOptions={(options) => options}
                         loading={loadingUbigeo}
