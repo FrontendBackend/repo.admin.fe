@@ -38,8 +38,21 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
       title: "Eliminar persona",
       message: (
         <>
-          ¿Estás seguro de eliminar a <strong>"{persona.noPersona}"</strong>?
-          Esta acción no se puede deshacer.
+          ¿Estás seguro de eliminar a{" "}
+          <strong>
+            "
+            {persona.noRazonSocial !== ""
+              ? persona.noRazonSocial.toUpperCase()
+              : (
+                  persona.noPersona +
+                  " " +
+                  persona.apPaterno +
+                  " " +
+                  persona.apMaterno
+                ).toUpperCase()}
+            "
+          </strong>
+          ? Esta acción no se puede deshacer.
         </>
       ),
       confirmText: "Eliminar",
