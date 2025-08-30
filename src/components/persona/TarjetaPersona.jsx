@@ -81,8 +81,7 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     }
                   />
                 }
-                
-                title={persona.noPersona}
+                title={persona.noRazonSocial ?? persona.noPersona + ' ' + persona.apPaterno + ' ' + persona.apMaterno}
                 subheader={
                   <Typography
                     variant="body2"
