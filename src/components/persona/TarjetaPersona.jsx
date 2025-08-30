@@ -81,7 +81,7 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     }
                   />
                 }
-                title={persona.noRazonSocial !== "" ? persona.noRazonSocial : (persona.noPersona + ' ' + persona.apPaterno + ' ' + persona.apMaterno)}
+                title={persona.noRazonSocial.toUpperCase() !== "" ? persona.noRazonSocial : (persona.noPersona + ' ' + persona.apPaterno + ' ' + persona.apMaterno).toUpperCase()}
                 subheader={
                   <Typography
                     variant="body2"
