@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import api from "../config/axiosConfig";
 
 export const filtrarUbigeo = async (filtro) => {
-  const filtroNormalizado = normalizarTexto(filtro);
+  // const filtroNormalizado = normalizarTexto(filtro);
   const res = await api.get(
-    `/ubigeos/buscar?filtro=${encodeURIComponent(filtroNormalizado)}`
+    `/ubigeos/buscar?filtro=${encodeURIComponent(filtro)}`
   );
   return res.data;
 };
