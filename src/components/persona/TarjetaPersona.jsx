@@ -126,13 +126,15 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     whiteSpace: "normal",
                   }}
                 >
-                  Tipo documento: {persona.descNoDocumentoIdentidad}
+                  Tipo documento:
+                  <small>{persona.descNoDocumentoIdentidad}</small>
                   <br />
-                  Documento de identidad: {persona.coDocumentoIdentidad}
+                  Documento de identidad:
+                  <small>{persona.coDocumentoIdentidad}</small>
                   <br />
-                  Ubigeo: {persona.descNombreUbigeo}
+                  Ubigeo: <small>{persona.descNombreUbigeo}</small>
                   <br />
-                  Fecha de nacimiento: {persona.feNacimiento}.
+                  Fecha de nacimiento: <small>{persona.feNacimiento}</small>
                 </Typography>
               </CardContent>
             </CardActionArea>
