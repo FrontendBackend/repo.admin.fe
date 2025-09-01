@@ -127,8 +127,11 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                   }}
                 >
                   Tipo documento: {persona.descNoDocumentoIdentidad}
+                  <br />
                   Documento de identidad: {persona.coDocumentoIdentidad}
+                  <br />
                   Ubigeo: {persona.descNombreUbigeo}
+                  <br />
                   Fecha de nacimiento: {persona.feNacimiento}.
                 </Typography>
               </CardContent>
