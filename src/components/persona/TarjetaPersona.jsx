@@ -94,7 +94,17 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     }
                   />
                 }
-                title={persona.noRazonSocial !== "" ? persona.noRazonSocial.toUpperCase() : (persona.noPersona + ' ' + persona.apPaterno + ' ' + persona.apMaterno).toUpperCase()}
+                title={
+                  persona.noRazonSocial !== ""
+                    ? persona.noRazonSocial.toUpperCase()
+                    : (
+                        persona.noPersona +
+                        " " +
+                        persona.apPaterno +
+                        " " +
+                        persona.apMaterno
+                      ).toUpperCase()
+                }
                 subheader={
                   <Typography
                     variant="body2"
@@ -116,7 +126,10 @@ const TarjetaPersona = ({ personas, onDelete, onEdit, onConsulta }) => {
                     whiteSpace: "normal",
                   }}
                 >
-                  Información adicional sobre {persona.noPersona}.
+                  Tipo documento: {persona.descNoDocumentoIdentidad}
+                  Documento de identidad: {persona.coDocumentoIdentidad}
+                  Ubigeo: {persona.descNombreUbigeo}
+                  Fecha de nacimiento: {persona.feNacimiento}.
                 </Typography>
               </CardContent>
             </CardActionArea>
